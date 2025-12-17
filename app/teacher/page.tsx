@@ -399,7 +399,7 @@ function SidebarLink({ label, icon, active, onClick }: SidebarLinkProps) {
 
 type DashboardTabProps = {
   periods: Period[];
-  summary: { present: number; late: number; absent: number; total: number };
+  summary: { present: number; late: number; absent: number; inReview: number; total: number };
   selectedDate: string;
   onDateChange: (value: string) => void;
   onNavigateToAttendance: () => void;
@@ -737,7 +737,7 @@ function AttendanceTab({
 }
 
 type ReportsTabProps = {
-  summary: { present: number; late: number; absent: number; total: number };
+  summary: { present: number; late: number; absent: number; inReview: number; total: number };
   selectedDate: string;
 };
 
