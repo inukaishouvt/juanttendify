@@ -9,7 +9,7 @@ const TURSO_AUTH_TOKEN =
 export default {
   schema: './lib/db/schema.ts',
   out: './drizzle',
-  dialect: 'turso',
+  dialect: 'sqlite',
   dbCredentials: {
     url: TURSO_DATABASE_URL,
     authToken: TURSO_AUTH_TOKEN,
