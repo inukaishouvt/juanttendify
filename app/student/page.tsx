@@ -51,7 +51,7 @@ export default function StudentPage() {
       });
 
       const data = await res.json();
-      
+
       // Store API response
       setApiResponses([{
         endpoint: 'POST /api/auth/login',
@@ -117,7 +117,7 @@ export default function StudentPage() {
     }
 
     const html5QrCode = new Html5Qrcode(scannerRef.current.id);
-    
+
     // Simplified camera configs - start with most common
     const cameraConfigs = [
       { facingMode: 'environment' }, // Back camera
@@ -132,7 +132,7 @@ export default function StudentPage() {
           config,
           {
             fps: isIOS ? 5 : 10,
-            qrbox: function(viewfinderWidth, viewfinderHeight) {
+            qrbox: function (viewfinderWidth, viewfinderHeight) {
               const minEdgePercentage = 0.75;
               const minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
               const qrboxSize = Math.floor(minEdgeSize * minEdgePercentage);
@@ -169,7 +169,7 @@ export default function StudentPage() {
     // If all configs failed, show helpful error
     console.error('All camera configs failed:', lastError);
     const errorMessage = lastError?.message || lastError?.toString() || 'Unknown error';
-    
+
     if (errorMessage.includes('Permission') || errorMessage.includes('NotAllowed')) {
       setError('Camera permission denied. Go to Settings > Safari > Camera and allow access, then refresh the page.');
     } else if (errorMessage.includes('NotFound') || errorMessage.includes('no camera')) {
@@ -179,7 +179,7 @@ export default function StudentPage() {
     } else {
       setError(`Camera error: ${errorMessage}. Try refreshing the page or checking camera permissions.`);
     }
-    
+
     try {
       await html5QrCode.clear();
     } catch {
@@ -258,7 +258,7 @@ export default function StudentPage() {
       });
 
       const data = await res.json();
-      
+
       // Store API response
       setApiResponses(prev => [{
         endpoint: 'POST /api/attendance/scan',
@@ -301,11 +301,11 @@ export default function StudentPage() {
 
   if (!token || !user) {
     return (
-      <div className="min-h-screen relative flex items-center justify-center px-4" style={{ backgroundImage: 'url(/background.jpg)', backgroundSize: 'cover', backgroundPosition: 'center' }}>
+      <div className="min-h-screen relative flex items-center justify-center px-4" style={{ backgroundImage: 'url(/Background.jpg)', backgroundSize: 'cover', backgroundPosition: 'center' }}>
         <div className="absolute inset-0 bg-black/40"></div>
         <div className="relative bg-white/95 rounded-3xl shadow-2xl px-8 py-10 max-w-md w-full text-center z-10">
           <div className="flex justify-center mb-4">
-            <Image src="/logo.png" alt="Juanttendify Logo" width={120} height={120} className="object-contain" unoptimized />
+            <Image src="/Logo.png" alt="Juanttendify Logo" width={120} height={120} className="object-contain" unoptimized />
           </div>
           <h1 className="text-2xl font-extrabold text-emerald-800 mb-2">
             Student access only
@@ -361,139 +361,138 @@ export default function StudentPage() {
   }
 
   return (
-    <div className="min-h-screen relative flex items-center justify-center px-2 py-4" style={{ backgroundImage: 'url(/background.jpg)', backgroundSize: 'cover', backgroundPosition: 'center' }}>
-        <div className="absolute inset-0 bg-black/30"></div>
-        <div className="relative mx-auto w-full max-w-md z-10">
-          {/* Phone frame */}
-          <div className="relative mx-auto w-full max-h-[95vh] rounded-[40px] bg-white shadow-[0_24px_70px_rgba(0,0,0,0.4)] overflow-hidden flex flex-col">
-            {/* Top app bar */}
-            <div className="flex items-center justify-between bg-emerald-700 px-4 py-3 text-white flex-shrink-0">
-              <div className="flex items-center gap-2">
-                <Image src="/logo.png" alt="Logo" width={32} height={32} className="object-contain" unoptimized />
-                <span className="text-sm font-semibold">Juanttendify</span>
-              </div>
-              <div className="flex items-center gap-3 text-xs">
-                <span className="text-[11px] font-medium">
-                  {user?.name?.split(' ')[0] ?? 'Student'}
-                </span>
-                <button
-                  onClick={logout}
-                  className="text-[11px] rounded-full bg-emerald-900/70 px-3 py-1 font-semibold"
-                >
-                  Logout
-                </button>
-              </div>
+    <div className="min-h-screen relative flex items-center justify-center px-2 py-4" style={{ backgroundImage: 'url(/Background.jpg)', backgroundSize: 'cover', backgroundPosition: 'center' }}>
+      <div className="absolute inset-0 bg-black/30"></div>
+      <div className="relative mx-auto w-full max-w-md z-10">
+        {/* Phone frame */}
+        <div className="relative mx-auto w-full max-h-[95vh] rounded-[40px] bg-white shadow-[0_24px_70px_rgba(0,0,0,0.4)] overflow-hidden flex flex-col">
+          {/* Top app bar */}
+          <div className="flex items-center justify-between bg-emerald-700 px-4 py-3 text-white flex-shrink-0">
+            <div className="flex items-center gap-2">
+              <Image src="/Logo.png" alt="Logo" width={32} height={32} className="object-contain" unoptimized />
+              <span className="text-sm font-semibold">Juanttendify</span>
             </div>
+            <div className="flex items-center gap-3 text-xs">
+              <span className="text-[11px] font-medium">
+                {user?.name?.split(' ')[0] ?? 'Student'}
+              </span>
+              <button
+                onClick={logout}
+                className="text-[11px] rounded-full bg-emerald-900/70 px-3 py-1 font-semibold"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
 
-            {/* Content */}
-            <div className="flex-1 flex flex-col bg-gradient-to-b from-white/90 to-emerald-50 px-4 pb-4 pt-3 overflow-hidden min-h-0">
-              {!result ? (
-                <>
-                  <h1 className="text-center text-sm font-extrabold tracking-[0.18em] text-emerald-800 mb-2 flex-shrink-0">
-                    SCAN HERE
-                  </h1>
-                  {error && (
-                    <div className="mb-2 rounded-md bg-red-100 px-3 py-2 text-[10px] font-medium text-red-700 flex-shrink-0">
-                      {error}
-                    </div>
-                  )}
-
-                  {/* Scanner window - optimized to fit */}
-                  <div className="flex-1 flex items-center justify-center min-h-0 my-2">
-                    <div className="relative w-full max-w-[280px] aspect-square rounded-[25px] border-4 border-emerald-700 bg-black/10 overflow-hidden">
-                      <div
-                        id="qr-reader"
-                        ref={scannerRef}
-                        className="absolute inset-0 rounded-xl"
-                      />
-                      <div className="pointer-events-none absolute inset-4 border-2 border-dashed border-yellow-400 rounded-lg" />
-                      <p className="pointer-events-none absolute bottom-3 w-full text-center text-[10px] font-semibold tracking-[0.16em] text-white drop-shadow">
-                        SCAN HERE
-                      </p>
-                    </div>
+          {/* Content */}
+          <div className="flex-1 flex flex-col bg-gradient-to-b from-white/90 to-emerald-50 px-4 pb-4 pt-3 overflow-hidden min-h-0">
+            {!result ? (
+              <>
+                <h1 className="text-center text-sm font-extrabold tracking-[0.18em] text-emerald-800 mb-2 flex-shrink-0">
+                  SCAN HERE
+                </h1>
+                {error && (
+                  <div className="mb-2 rounded-md bg-red-100 px-3 py-2 text-[10px] font-medium text-red-700 flex-shrink-0">
+                    {error}
                   </div>
+                )}
 
-                  {/* Bottom section - always visible */}
-                  <div className="flex-shrink-0 space-y-1">
-                    <p className="text-center text-[9px] text-emerald-700 font-medium">
-                      📍 Location access required
+                {/* Scanner window - optimized to fit */}
+                <div className="flex-1 flex items-center justify-center min-h-0 my-2">
+                  <div className="relative w-full max-w-[280px] aspect-square rounded-[25px] border-4 border-emerald-700 bg-black/10 overflow-hidden">
+                    <div
+                      id="qr-reader"
+                      ref={scannerRef}
+                      className="absolute inset-0 rounded-xl"
+                    />
+                    <div className="pointer-events-none absolute inset-4 border-2 border-dashed border-yellow-400 rounded-lg" />
+                    <p className="pointer-events-none absolute bottom-3 w-full text-center text-[10px] font-semibold tracking-[0.16em] text-white drop-shadow">
+                      SCAN HERE
                     </p>
-                    {typeof window !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent) && window.location.protocol !== 'https:' && (
-                      <p className="text-center text-[8px] text-orange-600 font-medium px-2">
-                        ⚠️ iOS requires HTTPS
-                      </p>
-                    )}
-                    <button
-                      onClick={scanning ? stopScanner : startScanner}
-                      className={`w-full rounded-full px-4 py-2.5 text-xs font-extrabold tracking-wide text-white shadow-sm ${
-                        scanning
-                          ? 'bg-red-600 hover:bg-red-700'
-                          : 'bg-emerald-600 hover:bg-emerald-700'
-                      }`}
-                    >
-                      {scanning ? 'Stop Scanner' : 'Start Scanner'}
-                    </button>
                   </div>
-                </>
-              ) : (
-                <>
-                  <div className="flex-1 flex flex-col justify-center rounded-2xl bg-emerald-700 px-4 py-5 text-center text-white overflow-y-auto">
-                    <h2 className="text-base font-extrabold mb-2">
-                      Attendance Recorded!
-                    </h2>
-                    <div className="rounded-xl bg-white/95 px-3 py-4 text-emerald-900">
-                      <p className="text-xs font-semibold">
-                        {result.student?.name ?? user.name}
-                      </p>
-                      <p className="mt-1 text-[10px] text-emerald-700">
-                        {result.period?.name}
-                      </p>
-                      <p className="mt-2 text-[11px] font-semibold text-emerald-800">
-                        {new Date(result.attendance.scannedAt).toLocaleTimeString(
-                          undefined,
-                          { hour: '2-digit', minute: '2-digit' }
-                        )}
-                      </p>
-                      <div className="mt-3 flex flex-col items-center gap-1.5">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-600 text-xl text-white">
-                          ✓
-                        </div>
-                        <p className="text-[10px] font-semibold text-emerald-800">
-                          Marked as{' '}
-                          <span className="uppercase">
-                            {result.status === 'in'
-                              ? 'PRESENT'
-                              : result.status === 'late'
+                </div>
+
+                {/* Bottom section - always visible */}
+                <div className="flex-shrink-0 space-y-1">
+                  <p className="text-center text-[9px] text-emerald-700 font-medium">
+                    📍 Location access required
+                  </p>
+                  {typeof window !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent) && window.location.protocol !== 'https:' && (
+                    <p className="text-center text-[8px] text-orange-600 font-medium px-2">
+                      ⚠️ iOS requires HTTPS
+                    </p>
+                  )}
+                  <button
+                    onClick={scanning ? stopScanner : startScanner}
+                    className={`w-full rounded-full px-4 py-2.5 text-xs font-extrabold tracking-wide text-white shadow-sm ${scanning
+                        ? 'bg-red-600 hover:bg-red-700'
+                        : 'bg-emerald-600 hover:bg-emerald-700'
+                      }`}
+                  >
+                    {scanning ? 'Stop Scanner' : 'Start Scanner'}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex-1 flex flex-col justify-center rounded-2xl bg-emerald-700 px-4 py-5 text-center text-white overflow-y-auto">
+                  <h2 className="text-base font-extrabold mb-2">
+                    Attendance Recorded!
+                  </h2>
+                  <div className="rounded-xl bg-white/95 px-3 py-4 text-emerald-900">
+                    <p className="text-xs font-semibold">
+                      {result.student?.name ?? user.name}
+                    </p>
+                    <p className="mt-1 text-[10px] text-emerald-700">
+                      {result.period?.name}
+                    </p>
+                    <p className="mt-2 text-[11px] font-semibold text-emerald-800">
+                      {new Date(result.attendance.scannedAt).toLocaleTimeString(
+                        undefined,
+                        { hour: '2-digit', minute: '2-digit' }
+                      )}
+                    </p>
+                    <div className="mt-3 flex flex-col items-center gap-1.5">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-600 text-xl text-white">
+                        ✓
+                      </div>
+                      <p className="text-[10px] font-semibold text-emerald-800">
+                        Marked as{' '}
+                        <span className="uppercase">
+                          {result.status === 'in'
+                            ? 'PRESENT'
+                            : result.status === 'late'
                               ? 'LATE'
                               : result.status === 'in_review'
-                              ? 'IN REVIEW'
-                              : 'ABSENT'}
-                          </span>
+                                ? 'IN REVIEW'
+                                : 'ABSENT'}
+                        </span>
+                      </p>
+                      {result.attendance?.locationStatus === 'in_review' && (
+                        <p className="mt-1 text-[9px] text-orange-600 font-medium">
+                          ⚠ Location verification pending
                         </p>
-                        {result.attendance?.locationStatus === 'in_review' && (
-                          <p className="mt-1 text-[9px] text-orange-600 font-medium">
-                            ⚠ Location verification pending
-                          </p>
-                        )}
-                      </div>
+                      )}
                     </div>
                   </div>
+                </div>
 
-                  <button
-                    onClick={() => {
-                      setResult(null);
-                      setError(null);
-                    }}
-                    className="mt-2 w-full rounded-full bg-emerald-600 px-4 py-2 text-xs font-extrabold tracking-wide text-white shadow-sm hover:bg-emerald-700 flex-shrink-0"
-                  >
-                    Scan Again
-                  </button>
-                </>
-              )}
-            </div>
+                <button
+                  onClick={() => {
+                    setResult(null);
+                    setError(null);
+                  }}
+                  className="mt-2 w-full rounded-full bg-emerald-600 px-4 py-2 text-xs font-extrabold tracking-wide text-white shadow-sm hover:bg-emerald-700 flex-shrink-0"
+                >
+                  Scan Again
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>
+    </div>
   );
 }
 

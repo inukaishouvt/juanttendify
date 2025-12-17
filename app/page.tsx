@@ -14,7 +14,7 @@ export default function Home() {
       {/* Background image + green gradient overlay */}
       <div className="absolute inset-0 -z-20">
         <Image
-          src="/background.jpg"
+          src="/Background.jpg"
           alt="Juanttendify background"
           fill
           priority
@@ -32,7 +32,7 @@ export default function Home() {
               <Link href="/" className="flex items-center gap-3">
                 <span className="inline-flex h-12 w-12 items-center justify-center rounded-lg bg-white shadow-sm">
                   <Image
-                    src="/logo.png"
+                    src="/Logo.png"
                     alt="Juanttendify logo"
                     width={48}
                     height={48}
@@ -342,22 +342,20 @@ function AuthRegisterForm({ onSuccess }: AuthRegisterFormProps) {
         <button
           type="button"
           onClick={() => setRole('student')}
-          className={`rounded-full px-5 py-3 ${
-            role === 'student'
+          className={`rounded-full px-5 py-3 ${role === 'student'
               ? 'bg-white text-emerald-800'
               : 'bg-emerald-600 text-emerald-50'
-          }`}
+            }`}
         >
           Student
         </button>
         <button
           type="button"
           onClick={() => setRole('teacher')}
-          className={`rounded-full px-5 py-3 ${
-            role === 'teacher'
+          className={`rounded-full px-5 py-3 ${role === 'teacher'
               ? 'bg-white text-emerald-800'
               : 'bg-emerald-600 text-emerald-50'
-          }`}
+            }`}
         >
           Teacher
         </button>
