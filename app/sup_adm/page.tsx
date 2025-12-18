@@ -150,17 +150,26 @@ export default function SuperAdminPage() {
   const handleCreateUser = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const data = {
+    const password = formData.get('password') as string;
+    const data: any = {
       email: formData.get('email') as string,
-      password: formData.get('password') as string,
       name: formData.get('name') as string,
       role: formData.get('role') as 'student' | 'teacher',
       studentId: formData.get('studentId') as string || null,
     };
 
+    // Only include password if it's provided (for updates, password is optional)
+    if (password) {
+      data.password = password;
+    }
+
     try {
-      const res = await fetch('/api/sup_adm/users', {
-        method: 'POST',
+      const isEditing = !!editingUser;
+      const url = isEditing ? `/api/sup_adm/users/${editingUser.id}` : '/api/sup_adm/users';
+      const method = isEditing ? 'PATCH' : 'POST';
+
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
@@ -168,13 +177,19 @@ export default function SuperAdminPage() {
       if (res.ok) {
         await fetchUsers();
         setShowUserForm(false);
+        setEditingUser(null);
         setError(null);
       } else {
-        setError(result.error || 'Failed to create user');
+        setError(result.error || `Failed to ${isEditing ? 'update' : 'create'} user`);
       }
     } catch (err) {
-      setError('Failed to create user');
+      setError(`Failed to ${editingUser ? 'update' : 'create'} user`);
     }
+  };
+
+  const handleEditUser = (user: User) => {
+    setEditingUser(user);
+    setShowUserForm(true);
   };
 
   const handleDeleteUser = async (userId: string) => {
@@ -206,8 +221,12 @@ export default function SuperAdminPage() {
     };
 
     try {
-      const res = await fetch('/api/sup_adm/periods', {
-        method: 'POST',
+      const isEditing = !!editingPeriod;
+      const url = isEditing ? `/api/sup_adm/periods/${editingPeriod.id}` : '/api/sup_adm/periods';
+      const method = isEditing ? 'PATCH' : 'POST';
+
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
@@ -215,13 +234,19 @@ export default function SuperAdminPage() {
       if (res.ok) {
         await fetchPeriods();
         setShowPeriodForm(false);
+        setEditingPeriod(null);
         setError(null);
       } else {
-        setError(result.error || 'Failed to create period');
+        setError(result.error || `Failed to ${isEditing ? 'update' : 'create'} period`);
       }
     } catch (err) {
-      setError('Failed to create period');
+      setError(`Failed to ${editingPeriod ? 'update' : 'create'} period`);
     }
+  };
+
+  const handleEditPeriod = (period: Period) => {
+    setEditingPeriod(period);
+    setShowPeriodForm(true);
   };
 
   const handleDeletePeriod = async (periodId: string) => {
@@ -375,6 +400,7 @@ export default function SuperAdminPage() {
                 users={users}
                 onRefresh={fetchUsers}
                 onCreate={() => setShowUserForm(true)}
+                onEdit={handleEditUser}
                 onDelete={handleDeleteUser}
               />
             )}
@@ -390,6 +416,7 @@ export default function SuperAdminPage() {
                 periods={periods}
                 onRefresh={fetchPeriods}
                 onCreate={() => setShowPeriodForm(true)}
+                onEdit={handleEditPeriod}
                 onDelete={handleDeletePeriod}
               />
             )}
@@ -490,11 +517,13 @@ function UsersTab({
   users,
   onRefresh,
   onCreate,
+  onEdit,
   onDelete,
 }: {
   users: User[];
   onRefresh: () => void;
   onCreate: () => void;
+  onEdit: (user: User) => void;
   onDelete: (id: string) => void;
 }) {
   return (
@@ -529,8 +558,8 @@ function UsersTab({
                   <td className="px-6 py-4">
                     <span
                       className={`px-4 py-2 rounded-full text-xs font-bold ${user.role === 'teacher'
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-blue-100 text-blue-700'
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-blue-100 text-blue-700'
                         }`}
                     >
                       {user.role.toUpperCase()}
@@ -541,12 +570,20 @@ function UsersTab({
                     {new Date(user.createdAt).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4">
-                    <button
-                      onClick={() => onDelete(user.id)}
-                      className="px-4 py-2 bg-red-500 text-white rounded-full text-sm font-semibold hover:bg-red-600"
-                    >
-                      Delete
-                    </button>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => onEdit(user)}
+                        className="px-4 py-2 bg-emerald-600 text-white rounded-full text-sm font-semibold hover:bg-emerald-700"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => onDelete(user.id)}
+                        className="px-4 py-2 bg-red-500 text-white rounded-full text-sm font-semibold hover:bg-red-600"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -603,12 +640,12 @@ function AttendanceTab({
                     <td className="px-6 py-4">
                       <span
                         className={`px-4 py-2 rounded-full text-xs font-bold ${record.status === 'in'
-                            ? 'bg-emerald-600 text-white'
-                            : record.status === 'late'
-                              ? 'bg-yellow-400 text-emerald-900'
-                              : record.status === 'in_review'
-                                ? 'bg-orange-500 text-white'
-                                : 'bg-red-500 text-white'
+                          ? 'bg-emerald-600 text-white'
+                          : record.status === 'late'
+                            ? 'bg-yellow-400 text-emerald-900'
+                            : record.status === 'in_review'
+                              ? 'bg-orange-500 text-white'
+                              : 'bg-red-500 text-white'
                           }`}
                       >
                         {record.status === 'in' ? 'PRESENT' : record.status === 'late' ? 'LATE' : record.status === 'in_review' ? 'IN REVIEW' : 'ABSENT'}
@@ -659,11 +696,13 @@ function PeriodsTab({
   periods,
   onRefresh,
   onCreate,
+  onEdit,
   onDelete,
 }: {
   periods: Period[];
   onRefresh: () => void;
   onCreate: () => void;
+  onEdit: (period: Period) => void;
   onDelete: (id: string) => void;
 }) {
   return (
@@ -697,12 +736,20 @@ function PeriodsTab({
                   <td className="px-6 py-4 text-base text-emerald-800">{period.endTime}</td>
                   <td className="px-6 py-4 text-base text-emerald-800">{period.lateThreshold} min</td>
                   <td className="px-6 py-4">
-                    <button
-                      onClick={() => onDelete(period.id)}
-                      className="px-4 py-2 bg-red-500 text-white rounded-full text-sm font-semibold hover:bg-red-600"
-                    >
-                      Delete
-                    </button>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => onEdit(period)}
+                        className="px-4 py-2 bg-emerald-600 text-white rounded-full text-sm font-semibold hover:bg-emerald-700"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => onDelete(period.id)}
+                        className="px-4 py-2 bg-red-500 text-white rounded-full text-sm font-semibold hover:bg-red-600"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
