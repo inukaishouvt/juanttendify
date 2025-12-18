@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 
 type User = {
   id: string;
@@ -51,7 +52,7 @@ export default function SuperAdminPage() {
   const [tab, setTab] = useState<TabKey>('dashboard');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Data
   const [users, setUsers] = useState<User[]>([]);
   const [periods, setPeriods] = useState<Period[]>([]);
@@ -260,120 +261,206 @@ export default function SuperAdminPage() {
     }
   };
 
+  const logout = () => {
+    window.location.href = '/';
+  };
+
   if (loading && !stats) {
     return (
-      <div className="min-h-screen bg-gradient-to-t from-purple-700/80 via-purple-500/40 to-white/85 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-t from-emerald-700/80 via-emerald-500/40 to-white/85 flex items-center justify-center">
         <div className="text-white text-xl font-bold">Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-t from-purple-700/80 via-purple-500/40 to-white/85">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="mb-8 bg-white/95 rounded-3xl shadow-2xl p-6">
-          <h1 className="text-4xl font-extrabold text-purple-900 mb-2">
-            🔐 Super Admin Dashboard
-          </h1>
-          <p className="text-purple-700">Full system access and management</p>
-        </div>
-
-        {error && (
-          <div className="mb-4 rounded-md bg-red-100 px-4 py-3 text-sm font-medium text-red-700">
-            {error}
-          </div>
-        )}
-
-        {/* Tabs */}
-        <div className="mb-6 flex flex-wrap gap-2 bg-white/95 rounded-2xl p-4 shadow-lg">
-          {(['dashboard', 'users', 'attendance', 'periods', 'qrcodes'] as TabKey[]).map((t) => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={`px-6 py-2 rounded-full font-semibold transition-colors ${
-                tab === t
-                  ? 'bg-purple-600 text-white'
-                  : 'bg-purple-100 text-purple-800 hover:bg-purple-200'
-              }`}
-            >
-              {t.charAt(0).toUpperCase() + t.slice(1)}
-            </button>
-          ))}
-        </div>
-
-        {/* Content */}
-        <div className="bg-white/95 rounded-3xl shadow-2xl p-6">
-          {tab === 'dashboard' && <DashboardTab stats={stats} />}
-          {tab === 'users' && (
-            <UsersTab
-              users={users}
-              onRefresh={fetchUsers}
-              onCreate={() => setShowUserForm(true)}
-              onDelete={handleDeleteUser}
-            />
-          )}
-          {tab === 'attendance' && (
-            <AttendanceTab
-              attendance={attendance}
-              onRefresh={fetchAttendance}
-              onVerify={handleVerifyAttendance}
-            />
-          )}
-          {tab === 'periods' && (
-            <PeriodsTab
-              periods={periods}
-              onRefresh={fetchPeriods}
-              onCreate={() => setShowPeriodForm(true)}
-              onDelete={handleDeletePeriod}
-            />
-          )}
-          {tab === 'qrcodes' && <QRCodesTab qrCodes={qrCodes} periods={periods} />}
-        </div>
-
-        {/* Modals */}
-        {showUserForm && (
-          <UserFormModal
-            onClose={() => {
-              setShowUserForm(false);
-              setEditingUser(null);
-            }}
-            onSubmit={handleCreateUser}
-            user={editingUser}
-          />
-        )}
-        {showPeriodForm && (
-          <PeriodFormModal
-            onClose={() => {
-              setShowPeriodForm(false);
-              setEditingPeriod(null);
-            }}
-            onSubmit={handleCreatePeriod}
-            period={editingPeriod}
-          />
-        )}
+    <div className="min-h-screen bg-gradient-to-t from-emerald-700/80 via-emerald-500/40 to-white/85">
+      {/* Background image */}
+      <div className="fixed inset-0 -z-10">
+        <Image
+          src="/Background.jpg"
+          alt="Background"
+          fill
+          className="object-cover"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-emerald-700/80 via-emerald-500/40 to-white/85" />
       </div>
+
+      <div className="mx-auto flex min-h-screen max-w-7xl">
+        {/* Sidebar */}
+        <aside className="flex w-72 flex-col bg-emerald-800/95 px-6 py-8 text-emerald-50">
+          <div className="mb-10 flex items-center gap-4">
+            <span className="inline-flex h-14 w-14 items-center justify-center rounded-lg bg-emerald-500 text-xl font-bold text-white shadow-sm">
+              🔐
+            </span>
+            <div>
+              <span className="text-base font-semibold">Juanttendify</span>
+              <p className="text-xs text-emerald-200">Super Admin</p>
+            </div>
+          </div>
+
+          <nav className="space-y-3 text-base font-semibold">
+            <SidebarLink
+              label="Dashboard"
+              icon="📊"
+              active={tab === 'dashboard'}
+              onClick={() => setTab('dashboard')}
+            />
+            <SidebarLink
+              label="Users"
+              icon="👥"
+              active={tab === 'users'}
+              onClick={() => setTab('users')}
+            />
+            <SidebarLink
+              label="Attendance"
+              icon="📝"
+              active={tab === 'attendance'}
+              onClick={() => setTab('attendance')}
+            />
+            <SidebarLink
+              label="Periods"
+              icon="🕐"
+              active={tab === 'periods'}
+              onClick={() => setTab('periods')}
+            />
+            <SidebarLink
+              label="QR Codes"
+              icon="📱"
+              active={tab === 'qrcodes'}
+              onClick={() => setTab('qrcodes')}
+            />
+          </nav>
+
+          <div className="mt-auto pt-8">
+            <button
+              onClick={logout}
+              className="flex w-full items-center gap-4 rounded-full px-5 py-3 text-base font-semibold text-emerald-50 hover:bg-emerald-700/80"
+            >
+              <span className="text-xl">⏻</span>
+              <span>Logout</span>
+            </button>
+          </div>
+        </aside>
+
+        {/* Main content */}
+        <div className="flex flex-1 flex-col bg-white/80">
+          {/* Top bar */}
+          <header className="flex items-center justify-between border-b border-emerald-100 bg-white/80 px-10 py-6">
+            <div>
+              <p className="text-sm font-semibold text-emerald-700">
+                Juan Sumulong Memorial Junior College
+              </p>
+              <p className="text-2xl font-bold text-emerald-900">
+                Super Admin Dashboard
+              </p>
+            </div>
+            <div className="inline-flex h-14 w-14 items-center justify-center rounded-full border-2 border-emerald-600 bg-white">
+              <span className="text-2xl text-emerald-700">🔐</span>
+            </div>
+          </header>
+
+          {/* Content */}
+          <main className="flex-1 overflow-y-auto px-10 py-8">
+            {error && (
+              <div className="mb-4 rounded-xl bg-red-100 px-4 py-3 text-sm font-medium text-red-700">
+                {error}
+              </div>
+            )}
+
+            {tab === 'dashboard' && <DashboardTab stats={stats} />}
+            {tab === 'users' && (
+              <UsersTab
+                users={users}
+                onRefresh={fetchUsers}
+                onCreate={() => setShowUserForm(true)}
+                onDelete={handleDeleteUser}
+              />
+            )}
+            {tab === 'attendance' && (
+              <AttendanceTab
+                attendance={attendance}
+                onRefresh={fetchAttendance}
+                onVerify={handleVerifyAttendance}
+              />
+            )}
+            {tab === 'periods' && (
+              <PeriodsTab
+                periods={periods}
+                onRefresh={fetchPeriods}
+                onCreate={() => setShowPeriodForm(true)}
+                onDelete={handleDeletePeriod}
+              />
+            )}
+            {tab === 'qrcodes' && <QRCodesTab qrCodes={qrCodes} periods={periods} />}
+          </main>
+        </div>
+      </div>
+
+      {/* Modals */}
+      {showUserForm && (
+        <UserFormModal
+          onClose={() => {
+            setShowUserForm(false);
+            setEditingUser(null);
+          }}
+          onSubmit={handleCreateUser}
+          user={editingUser}
+        />
+      )}
+      {showPeriodForm && (
+        <PeriodFormModal
+          onClose={() => {
+            setShowPeriodForm(false);
+            setEditingPeriod(null);
+          }}
+          onSubmit={handleCreatePeriod}
+          period={editingPeriod}
+        />
+      )}
     </div>
+  );
+}
+
+type SidebarLinkProps = {
+  label: string;
+  icon: string;
+  active: boolean;
+  onClick: () => void;
+};
+
+function SidebarLink({ label, icon, active, onClick }: SidebarLinkProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex w-full items-center gap-4 rounded-full px-5 py-3 ${active ? 'bg-emerald-600 text-white' : 'text-emerald-50 hover:bg-emerald-700/80'
+        }`}
+    >
+      <span className="text-2xl">{icon}</span>
+      <span className="text-base font-semibold">{label}</span>
+    </button>
   );
 }
 
 function DashboardTab({ stats }: { stats: any }) {
   if (!stats) {
-    return <div className="text-center py-12 text-purple-700">Loading statistics...</div>;
+    return <div className="text-center py-12 text-emerald-700">Loading statistics...</div>;
   }
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-purple-900 mb-4">System Statistics</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Total Users" value={stats.totalUsers} color="purple" />
+      <h2 className="text-3xl font-extrabold text-emerald-900">System Statistics</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard label="Total Users" value={stats.totalUsers} color="emerald" />
         <StatCard label="Students" value={stats.totalStudents} color="blue" />
         <StatCard label="Teachers" value={stats.totalTeachers} color="green" />
         <StatCard label="Periods" value={stats.totalPeriods} color="orange" />
         <StatCard label="Attendance Records" value={stats.totalAttendance} color="indigo" />
         <StatCard label="QR Codes" value={stats.totalQRCodes} color="pink" />
         <StatCard label="In Review" value={stats.inReview} color="yellow" />
-        <StatCard label="Verified" value={stats.verified} color="emerald" />
+        <StatCard label="Verified" value={stats.verified} color="teal" />
       </div>
     </div>
   );
@@ -381,20 +468,20 @@ function DashboardTab({ stats }: { stats: any }) {
 
 function StatCard({ label, value, color }: { label: string; value: number; color: string }) {
   const colors: Record<string, string> = {
-    purple: 'bg-purple-500',
+    emerald: 'bg-emerald-600',
     blue: 'bg-blue-500',
     green: 'bg-green-500',
     orange: 'bg-orange-500',
     indigo: 'bg-indigo-500',
     pink: 'bg-pink-500',
     yellow: 'bg-yellow-500',
-    emerald: 'bg-emerald-500',
+    teal: 'bg-teal-500',
   };
 
   return (
-    <div className={`${colors[color]} rounded-xl p-6 text-white shadow-lg`}>
-      <p className="text-sm font-semibold uppercase tracking-wide">{label}</p>
-      <p className="text-3xl font-extrabold mt-2">{value || 0}</p>
+    <div className={`${colors[color]} rounded-3xl p-7 text-white shadow-lg`}>
+      <p className="text-sm font-semibold uppercase tracking-[0.18em]">{label}</p>
+      <p className="text-4xl font-extrabold mt-3">{value || 0}</p>
     </div>
   );
 }
@@ -411,60 +498,61 @@ function UsersTab({
   onDelete: (id: string) => void;
 }) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-purple-900">Users Management</h2>
+        <h2 className="text-3xl font-extrabold text-emerald-900">Users Management</h2>
         <button
           onClick={onCreate}
-          className="px-4 py-2 bg-purple-600 text-white rounded-full font-semibold hover:bg-purple-700"
+          className="px-6 py-3 bg-emerald-600 text-white rounded-full font-semibold hover:bg-emerald-700 shadow-sm"
         >
           + Create User
         </button>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead className="bg-purple-100">
-            <tr>
-              <th className="px-4 py-2 text-left">Name</th>
-              <th className="px-4 py-2 text-left">Email</th>
-              <th className="px-4 py-2 text-left">Role</th>
-              <th className="px-4 py-2 text-left">Student ID</th>
-              <th className="px-4 py-2 text-left">Created</th>
-              <th className="px-4 py-2 text-left">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((user) => (
-              <tr key={user.id} className="border-b">
-                <td className="px-4 py-2">{user.name}</td>
-                <td className="px-4 py-2">{user.email}</td>
-                <td className="px-4 py-2">
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                      user.role === 'teacher'
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-blue-100 text-blue-700'
-                    }`}
-                  >
-                    {user.role}
-                  </span>
-                </td>
-                <td className="px-4 py-2">{user.studentId || '-'}</td>
-                <td className="px-4 py-2">
-                  {new Date(user.createdAt).toLocaleDateString()}
-                </td>
-                <td className="px-4 py-2">
-                  <button
-                    onClick={() => onDelete(user.id)}
-                    className="px-3 py-1 bg-red-500 text-white rounded text-sm hover:bg-red-600"
-                  >
-                    Delete
-                  </button>
-                </td>
+      <div className="overflow-hidden rounded-3xl bg-white shadow-lg">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-emerald-50 border-b border-emerald-100">
+              <tr>
+                <th className="px-6 py-4 text-left text-sm font-extrabold uppercase tracking-[0.18em] text-emerald-800">Name</th>
+                <th className="px-6 py-4 text-left text-sm font-extrabold uppercase tracking-[0.18em] text-emerald-800">Email</th>
+                <th className="px-6 py-4 text-left text-sm font-extrabold uppercase tracking-[0.18em] text-emerald-800">Role</th>
+                <th className="px-6 py-4 text-left text-sm font-extrabold uppercase tracking-[0.18em] text-emerald-800">Student ID</th>
+                <th className="px-6 py-4 text-left text-sm font-extrabold uppercase tracking-[0.18em] text-emerald-800">Created</th>
+                <th className="px-6 py-4 text-left text-sm font-extrabold uppercase tracking-[0.18em] text-emerald-800">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {users.map((user) => (
+                <tr key={user.id} className="border-b border-emerald-50 last:border-b-0">
+                  <td className="px-6 py-4 text-base text-emerald-900 font-medium">{user.name}</td>
+                  <td className="px-6 py-4 text-base text-emerald-800">{user.email}</td>
+                  <td className="px-6 py-4">
+                    <span
+                      className={`px-4 py-2 rounded-full text-xs font-bold ${user.role === 'teacher'
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-blue-100 text-blue-700'
+                        }`}
+                    >
+                      {user.role.toUpperCase()}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-base text-emerald-800">{user.studentId || '-'}</td>
+                  <td className="px-6 py-4 text-base text-emerald-800">
+                    {new Date(user.createdAt).toLocaleDateString()}
+                  </td>
+                  <td className="px-6 py-4">
+                    <button
+                      onClick={() => onDelete(user.id)}
+                      className="px-4 py-2 bg-red-500 text-white rounded-full text-sm font-semibold hover:bg-red-600"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
@@ -480,84 +568,88 @@ function AttendanceTab({
   onVerify: (id: string, status: 'in' | 'late' | 'out') => void;
 }) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-purple-900">Attendance Records</h2>
+        <h2 className="text-3xl font-extrabold text-emerald-900">Attendance Records</h2>
         <button
           onClick={onRefresh}
-          className="px-4 py-2 bg-purple-600 text-white rounded-full font-semibold hover:bg-purple-700"
+          className="px-6 py-3 bg-emerald-600 text-white rounded-full font-semibold hover:bg-emerald-700 shadow-sm"
         >
           Refresh
         </button>
       </div>
-      <div className="overflow-x-auto max-h-96 overflow-y-auto">
-        <table className="w-full">
-          <thead className="bg-purple-100 sticky top-0">
-            <tr>
-              <th className="px-4 py-2 text-left">Student</th>
-              <th className="px-4 py-2 text-left">Period</th>
-              <th className="px-4 py-2 text-left">Date</th>
-              <th className="px-4 py-2 text-left">Status</th>
-              <th className="px-4 py-2 text-left">Location</th>
-              <th className="px-4 py-2 text-left">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {attendance.map((record) => {
-              const lat = record.latitude ? (record.latitude / 1e6).toFixed(6) : null;
-              const lng = record.longitude ? (record.longitude / 1e6).toFixed(6) : null;
-              return (
-                <tr key={record.id} className="border-b">
-                  <td className="px-4 py-2">{record.student.name}</td>
-                  <td className="px-4 py-2">{record.period.name}</td>
-                  <td className="px-4 py-2">{record.date}</td>
-                  <td className="px-4 py-2">
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                        record.status === 'in'
-                          ? 'bg-green-100 text-green-700'
-                          : record.status === 'late'
-                          ? 'bg-yellow-100 text-yellow-700'
-                          : record.status === 'in_review'
-                          ? 'bg-orange-100 text-orange-700'
-                          : 'bg-red-100 text-red-700'
-                      }`}
-                    >
-                      {record.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-2 text-xs">
-                    {lat && lng ? `${lat}, ${lng}` : 'No location'}
-                  </td>
-                  <td className="px-4 py-2">
-                    {record.status === 'in_review' && (
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => onVerify(record.id, 'in')}
-                          className="px-2 py-1 bg-green-500 text-white rounded text-xs hover:bg-green-600"
-                        >
-                          ✓
-                        </button>
-                        <button
-                          onClick={() => onVerify(record.id, 'late')}
-                          className="px-2 py-1 bg-yellow-500 text-white rounded text-xs hover:bg-yellow-600"
-                        >
-                          ⏰
-                        </button>
-                        <button
-                          onClick={() => onVerify(record.id, 'out')}
-                          className="px-2 py-1 bg-red-500 text-white rounded text-xs hover:bg-red-600"
-                        >
-                          ✗
-                        </button>
-                      </div>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+      <div className="overflow-hidden rounded-3xl bg-white shadow-lg">
+        <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
+          <table className="w-full">
+            <thead className="bg-emerald-50 border-b border-emerald-100 sticky top-0">
+              <tr>
+                <th className="px-6 py-4 text-left text-sm font-extrabold uppercase tracking-[0.18em] text-emerald-800">Student</th>
+                <th className="px-6 py-4 text-left text-sm font-extrabold uppercase tracking-[0.18em] text-emerald-800">Period</th>
+                <th className="px-6 py-4 text-left text-sm font-extrabold uppercase tracking-[0.18em] text-emerald-800">Date</th>
+                <th className="px-6 py-4 text-left text-sm font-extrabold uppercase tracking-[0.18em] text-emerald-800">Status</th>
+                <th className="px-6 py-4 text-left text-sm font-extrabold uppercase tracking-[0.18em] text-emerald-800">Location</th>
+                <th className="px-6 py-4 text-left text-sm font-extrabold uppercase tracking-[0.18em] text-emerald-800">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {attendance.map((record) => {
+                const lat = record.latitude ? (record.latitude / 1e6).toFixed(6) : null;
+                const lng = record.longitude ? (record.longitude / 1e6).toFixed(6) : null;
+                return (
+                  <tr key={record.id} className="border-b border-emerald-50 last:border-b-0">
+                    <td className="px-6 py-4 text-base text-emerald-900 font-medium">{record.student.name}</td>
+                    <td className="px-6 py-4 text-base text-emerald-800">{record.period.name}</td>
+                    <td className="px-6 py-4 text-base text-emerald-800">{record.date}</td>
+                    <td className="px-6 py-4">
+                      <span
+                        className={`px-4 py-2 rounded-full text-xs font-bold ${record.status === 'in'
+                            ? 'bg-emerald-600 text-white'
+                            : record.status === 'late'
+                              ? 'bg-yellow-400 text-emerald-900'
+                              : record.status === 'in_review'
+                                ? 'bg-orange-500 text-white'
+                                : 'bg-red-500 text-white'
+                          }`}
+                      >
+                        {record.status === 'in' ? 'PRESENT' : record.status === 'late' ? 'LATE' : record.status === 'in_review' ? 'IN REVIEW' : 'ABSENT'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-xs text-emerald-700">
+                      {lat && lng ? `${lat}, ${lng}` : 'No location'}
+                    </td>
+                    <td className="px-6 py-4">
+                      {record.status === 'in_review' && (
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => onVerify(record.id, 'in')}
+                            className="px-3 py-1.5 bg-emerald-600 text-white rounded-full text-xs font-semibold hover:bg-emerald-700"
+                            title="Mark as Present"
+                          >
+                            ✓
+                          </button>
+                          <button
+                            onClick={() => onVerify(record.id, 'late')}
+                            className="px-3 py-1.5 bg-yellow-400 text-emerald-900 rounded-full text-xs font-semibold hover:bg-yellow-500"
+                            title="Mark as Late"
+                          >
+                            ⏰
+                          </button>
+                          <button
+                            onClick={() => onVerify(record.id, 'out')}
+                            className="px-3 py-1.5 bg-red-500 text-white rounded-full text-xs font-semibold hover:bg-red-600"
+                            title="Mark as Absent"
+                          >
+                            ✗
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
@@ -575,46 +667,48 @@ function PeriodsTab({
   onDelete: (id: string) => void;
 }) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-purple-900">Periods Management</h2>
+        <h2 className="text-3xl font-extrabold text-emerald-900">Periods Management</h2>
         <button
           onClick={onCreate}
-          className="px-4 py-2 bg-purple-600 text-white rounded-full font-semibold hover:bg-purple-700"
+          className="px-6 py-3 bg-emerald-600 text-white rounded-full font-semibold hover:bg-emerald-700 shadow-sm"
         >
           + Create Period
         </button>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead className="bg-purple-100">
-            <tr>
-              <th className="px-4 py-2 text-left">Name</th>
-              <th className="px-4 py-2 text-left">Start Time</th>
-              <th className="px-4 py-2 text-left">End Time</th>
-              <th className="px-4 py-2 text-left">Late Threshold</th>
-              <th className="px-4 py-2 text-left">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {periods.map((period) => (
-              <tr key={period.id} className="border-b">
-                <td className="px-4 py-2 font-semibold">{period.name}</td>
-                <td className="px-4 py-2">{period.startTime}</td>
-                <td className="px-4 py-2">{period.endTime}</td>
-                <td className="px-4 py-2">{period.lateThreshold} min</td>
-                <td className="px-4 py-2">
-                  <button
-                    onClick={() => onDelete(period.id)}
-                    className="px-3 py-1 bg-red-500 text-white rounded text-sm hover:bg-red-600"
-                  >
-                    Delete
-                  </button>
-                </td>
+      <div className="overflow-hidden rounded-3xl bg-white shadow-lg">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-emerald-50 border-b border-emerald-100">
+              <tr>
+                <th className="px-6 py-4 text-left text-sm font-extrabold uppercase tracking-[0.18em] text-emerald-800">Name</th>
+                <th className="px-6 py-4 text-left text-sm font-extrabold uppercase tracking-[0.18em] text-emerald-800">Start Time</th>
+                <th className="px-6 py-4 text-left text-sm font-extrabold uppercase tracking-[0.18em] text-emerald-800">End Time</th>
+                <th className="px-6 py-4 text-left text-sm font-extrabold uppercase tracking-[0.18em] text-emerald-800">Late Threshold</th>
+                <th className="px-6 py-4 text-left text-sm font-extrabold uppercase tracking-[0.18em] text-emerald-800">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {periods.map((period) => (
+                <tr key={period.id} className="border-b border-emerald-50 last:border-b-0">
+                  <td className="px-6 py-4 text-base text-emerald-900 font-semibold">{period.name}</td>
+                  <td className="px-6 py-4 text-base text-emerald-800">{period.startTime}</td>
+                  <td className="px-6 py-4 text-base text-emerald-800">{period.endTime}</td>
+                  <td className="px-6 py-4 text-base text-emerald-800">{period.lateThreshold} min</td>
+                  <td className="px-6 py-4">
+                    <button
+                      onClick={() => onDelete(period.id)}
+                      className="px-4 py-2 bg-red-500 text-white rounded-full text-sm font-semibold hover:bg-red-600"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
@@ -622,38 +716,40 @@ function PeriodsTab({
 
 function QRCodesTab({ qrCodes, periods }: { qrCodes: QRCode[]; periods: Period[] }) {
   return (
-    <div className="space-y-4">
-      <h2 className="text-2xl font-bold text-purple-900">QR Codes</h2>
-      <div className="overflow-x-auto max-h-96 overflow-y-auto">
-        <table className="w-full">
-          <thead className="bg-purple-100 sticky top-0">
-            <tr>
-              <th className="px-4 py-2 text-left">Code</th>
-              <th className="px-4 py-2 text-left">Period</th>
-              <th className="px-4 py-2 text-left">Date</th>
-              <th className="px-4 py-2 text-left">Expires At</th>
-              <th className="px-4 py-2 text-left">Created</th>
-            </tr>
-          </thead>
-          <tbody>
-            {qrCodes.map((qr) => {
-              const period = periods.find((p) => p.id === qr.periodId);
-              return (
-                <tr key={qr.id} className="border-b">
-                  <td className="px-4 py-2 font-mono text-xs">{qr.code.substring(0, 20)}...</td>
-                  <td className="px-4 py-2">{period?.name || 'N/A'}</td>
-                  <td className="px-4 py-2">{qr.date}</td>
-                  <td className="px-4 py-2">
-                    {new Date(qr.expiresAt).toLocaleString()}
-                  </td>
-                  <td className="px-4 py-2">
-                    {new Date(qr.createdAt).toLocaleString()}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+    <div className="space-y-6">
+      <h2 className="text-3xl font-extrabold text-emerald-900">QR Codes</h2>
+      <div className="overflow-hidden rounded-3xl bg-white shadow-lg">
+        <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
+          <table className="w-full">
+            <thead className="bg-emerald-50 border-b border-emerald-100 sticky top-0">
+              <tr>
+                <th className="px-6 py-4 text-left text-sm font-extrabold uppercase tracking-[0.18em] text-emerald-800">Code</th>
+                <th className="px-6 py-4 text-left text-sm font-extrabold uppercase tracking-[0.18em] text-emerald-800">Period</th>
+                <th className="px-6 py-4 text-left text-sm font-extrabold uppercase tracking-[0.18em] text-emerald-800">Date</th>
+                <th className="px-6 py-4 text-left text-sm font-extrabold uppercase tracking-[0.18em] text-emerald-800">Expires At</th>
+                <th className="px-6 py-4 text-left text-sm font-extrabold uppercase tracking-[0.18em] text-emerald-800">Created</th>
+              </tr>
+            </thead>
+            <tbody>
+              {qrCodes.map((qr) => {
+                const period = periods.find((p) => p.id === qr.periodId);
+                return (
+                  <tr key={qr.id} className="border-b border-emerald-50 last:border-b-0">
+                    <td className="px-6 py-4 font-mono text-xs text-emerald-700">{qr.code.substring(0, 20)}...</td>
+                    <td className="px-6 py-4 text-base text-emerald-800">{period?.name || 'N/A'}</td>
+                    <td className="px-6 py-4 text-base text-emerald-800">{qr.date}</td>
+                    <td className="px-6 py-4 text-base text-emerald-800">
+                      {new Date(qr.expiresAt).toLocaleString()}
+                    </td>
+                    <td className="px-6 py-4 text-base text-emerald-800">
+                      {new Date(qr.createdAt).toLocaleString()}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
@@ -669,75 +765,84 @@ function UserFormModal({
   user: User | null;
 }) {
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4">
-        <h3 className="text-xl font-bold text-purple-900 mb-4">
-          {user ? 'Edit User' : 'Create User'}
-        </h3>
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
+      <div className="bg-emerald-700/95 rounded-[32px] p-8 max-w-md w-full mx-4 text-white shadow-2xl">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-2xl font-extrabold tracking-wide">
+            {user ? 'Edit User' : 'Create User'}
+          </h3>
+          <button
+            onClick={onClose}
+            className="text-2xl text-emerald-50 hover:text-white"
+            aria-label="Close"
+          >
+            ✕
+          </button>
+        </div>
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-semibold text-purple-800 mb-1">Name</label>
+            <label className="block text-base font-semibold text-emerald-50 mb-2">Name</label>
             <input
               type="text"
               name="name"
               defaultValue={user?.name}
               required
-              className="w-full rounded-lg border border-purple-200 px-4 py-2"
+              className="w-full rounded-full border-none bg-white px-6 py-4 text-base font-medium text-emerald-900 shadow-sm outline-none ring-0 focus:ring-2 focus:ring-emerald-400"
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-purple-800 mb-1">Email</label>
+            <label className="block text-base font-semibold text-emerald-50 mb-2">Email</label>
             <input
               type="email"
               name="email"
               defaultValue={user?.email}
               required
-              className="w-full rounded-lg border border-purple-200 px-4 py-2"
+              className="w-full rounded-full border-none bg-white px-6 py-4 text-base font-medium text-emerald-900 shadow-sm outline-none ring-0 focus:ring-2 focus:ring-emerald-400"
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-purple-800 mb-1">Password</label>
+            <label className="block text-base font-semibold text-emerald-50 mb-2">Password</label>
             <input
               type="password"
               name="password"
               required={!user}
-              className="w-full rounded-lg border border-purple-200 px-4 py-2"
+              className="w-full rounded-full border-none bg-white px-6 py-4 text-base font-medium text-emerald-900 shadow-sm outline-none ring-0 focus:ring-2 focus:ring-emerald-400"
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-purple-800 mb-1">Role</label>
+            <label className="block text-base font-semibold text-emerald-50 mb-2">Role</label>
             <select
               name="role"
               defaultValue={user?.role}
               required
-              className="w-full rounded-lg border border-purple-200 px-4 py-2"
+              className="w-full rounded-full border-none bg-white px-6 py-4 text-base font-medium text-emerald-900 shadow-sm outline-none ring-0 focus:ring-2 focus:ring-emerald-400"
             >
               <option value="student">Student</option>
               <option value="teacher">Teacher</option>
             </select>
           </div>
           <div>
-            <label className="block text-sm font-semibold text-purple-800 mb-1">
+            <label className="block text-base font-semibold text-emerald-50 mb-2">
               Student ID (if student)
             </label>
             <input
               type="text"
               name="studentId"
               defaultValue={user?.studentId || ''}
-              className="w-full rounded-lg border border-purple-200 px-4 py-2"
+              className="w-full rounded-full border-none bg-white px-6 py-4 text-base font-medium text-emerald-900 shadow-sm outline-none ring-0 focus:ring-2 focus:ring-emerald-400"
             />
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-3 pt-2">
             <button
               type="submit"
-              className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700"
+              className="flex-1 px-6 py-4 bg-white text-emerald-800 rounded-full font-extrabold tracking-wide shadow-sm hover:bg-emerald-100"
             >
               {user ? 'Update' : 'Create'}
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg font-semibold hover:bg-gray-300"
+              className="flex-1 px-6 py-4 bg-emerald-600 text-white rounded-full font-extrabold tracking-wide shadow-sm hover:bg-emerald-500"
             >
               Cancel
             </button>
@@ -758,44 +863,53 @@ function PeriodFormModal({
   period: Period | null;
 }) {
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4">
-        <h3 className="text-xl font-bold text-purple-900 mb-4">
-          {period ? 'Edit Period' : 'Create Period'}
-        </h3>
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
+      <div className="bg-emerald-700/95 rounded-[32px] p-8 max-w-md w-full mx-4 text-white shadow-2xl">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-2xl font-extrabold tracking-wide">
+            {period ? 'Edit Period' : 'Create Period'}
+          </h3>
+          <button
+            onClick={onClose}
+            className="text-2xl text-emerald-50 hover:text-white"
+            aria-label="Close"
+          >
+            ✕
+          </button>
+        </div>
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-semibold text-purple-800 mb-1">Name</label>
+            <label className="block text-base font-semibold text-emerald-50 mb-2">Name</label>
             <input
               type="text"
               name="name"
               defaultValue={period?.name}
               required
-              className="w-full rounded-lg border border-purple-200 px-4 py-2"
+              className="w-full rounded-full border-none bg-white px-6 py-4 text-base font-medium text-emerald-900 shadow-sm outline-none ring-0 focus:ring-2 focus:ring-emerald-400"
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-purple-800 mb-1">Start Time</label>
+            <label className="block text-base font-semibold text-emerald-50 mb-2">Start Time</label>
             <input
               type="time"
               name="startTime"
               defaultValue={period?.startTime}
               required
-              className="w-full rounded-lg border border-purple-200 px-4 py-2"
+              className="w-full rounded-full border-none bg-white px-6 py-4 text-base font-medium text-emerald-900 shadow-sm outline-none ring-0 focus:ring-2 focus:ring-emerald-400"
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-purple-800 mb-1">End Time</label>
+            <label className="block text-base font-semibold text-emerald-50 mb-2">End Time</label>
             <input
               type="time"
               name="endTime"
               defaultValue={period?.endTime}
               required
-              className="w-full rounded-lg border border-purple-200 px-4 py-2"
+              className="w-full rounded-full border-none bg-white px-6 py-4 text-base font-medium text-emerald-900 shadow-sm outline-none ring-0 focus:ring-2 focus:ring-emerald-400"
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-purple-800 mb-1">
+            <label className="block text-base font-semibold text-emerald-50 mb-2">
               Late Threshold (minutes)
             </label>
             <input
@@ -803,20 +917,20 @@ function PeriodFormModal({
               name="lateThreshold"
               defaultValue={period?.lateThreshold || 15}
               required
-              className="w-full rounded-lg border border-purple-200 px-4 py-2"
+              className="w-full rounded-full border-none bg-white px-6 py-4 text-base font-medium text-emerald-900 shadow-sm outline-none ring-0 focus:ring-2 focus:ring-emerald-400"
             />
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-3 pt-2">
             <button
               type="submit"
-              className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700"
+              className="flex-1 px-6 py-4 bg-white text-emerald-800 rounded-full font-extrabold tracking-wide shadow-sm hover:bg-emerald-100"
             >
               {period ? 'Update' : 'Create'}
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg font-semibold hover:bg-gray-300"
+              className="flex-1 px-6 py-4 bg-emerald-600 text-white rounded-full font-extrabold tracking-wide shadow-sm hover:bg-emerald-500"
             >
               Cancel
             </button>
@@ -826,4 +940,3 @@ function PeriodFormModal({
     </div>
   );
 }
-
