@@ -40,7 +40,7 @@ export default function Home() {
                     unoptimized
                   />
                 </span>
-                <span className="text-lg font-semibold text-emerald-900">
+                <span className="text-lg font-semibold text-emerald-900 font-quicksand">
                   Juanttendify
                 </span>
               </Link>

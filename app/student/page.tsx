@@ -370,7 +370,7 @@ export default function StudentPage() {
           <div className="flex items-center justify-between bg-emerald-700 px-4 py-3 text-white flex-shrink-0">
             <div className="flex items-center gap-2">
               <Image src="/Logo.png" alt="Logo" width={32} height={32} className="object-contain" unoptimized />
-              <span className="text-sm font-semibold">Juanttendify</span>
+              <span className="text-sm font-semibold font-quicksand">Juanttendify</span>
             </div>
             <div className="flex items-center gap-3 text-xs">
               <span className="text-[11px] font-medium">

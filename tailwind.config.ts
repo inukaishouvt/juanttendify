@@ -12,6 +12,9 @@ const config: Config = {
         background: 'var(--background)',
         foreground: 'var(--foreground)',
       },
+      fontFamily: {
+        quicksand: ['var(--font-quicksand)', 'sans-serif'],
+      },
     },
   },
   plugins: [],

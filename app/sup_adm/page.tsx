@@ -326,7 +326,7 @@ export default function SuperAdminPage() {
               unoptimized
             />
             <div>
-              <span className="text-base font-semibold">Juanttendify</span>
+              <span className="text-base font-semibold font-quicksand">Juanttendify</span>
               <p className="text-xs text-emerald-200">Super Admin</p>
             </div>
           </div>

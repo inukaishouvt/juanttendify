@@ -1,5 +1,11 @@
 import type { Metadata } from 'next';
+import { Quicksand } from 'next/font/google';
 import './globals.css';
+
+const quicksand = Quicksand({
+  subsets: ['latin'],
+  variable: '--font-quicksand',
+});
 
 export const metadata: Metadata = {
   title: 'Juanttendify - School Attendance System',
@@ -13,7 +19,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body style={{ fontFamily: '"Times New Roman", Times, serif' }}>
+      <body
+        className={quicksand.variable}
+        style={{ fontFamily: '"Times New Roman", Times, serif' }}
+      >
         {children}
       </body>
     </html>
