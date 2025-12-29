@@ -44,18 +44,7 @@ export default function Home() {
                   Juanttendify
                 </span>
               </Link>
-              {/* Burger menu icon */}
-              <button
-                type="button"
-                aria-label="Open menu"
-                className="inline-flex h-12 w-12 items-center justify-center rounded-lg bg-emerald-600 text-white shadow-sm hover:bg-emerald-700 transition-colors"
-              >
-                <span className="space-y-1.5">
-                  <span className="block h-1 w-5 bg-white" />
-                  <span className="block h-1 w-5 bg-white" />
-                  <span className="block h-1 w-5 bg-white" />
-                </span>
-              </button>
+
             </div>
 
             {/* Profile icon on the right */}
