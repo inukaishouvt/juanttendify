@@ -8,6 +8,42 @@ function isSuperAdminRequest(request: NextRequest): boolean {
   return referer?.includes('/sup_adm') || true;
 }
 
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  if (!isSuperAdminRequest(request)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+  try {
+    const { id: userId } = await params;
+    const body = await request.json();
+    const { name, email, role, studentLrn } = body;
+
+    const updateData: any = {};
+    if (name) updateData.name = name;
+    if (email) updateData.email = email;
+    if (role) updateData.role = role;
+    if (studentLrn !== undefined) updateData.studentLrn = studentLrn;
+
+    const updated = await db
+      .update(users)
+      .set(updateData)
+      .where(eq(users.id, userId))
+      .returning();
+
+    if (updated.length === 0) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    return NextResponse.json({ user: updated[0] });
+  } catch (error) {
+    console.error('Error updating user:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

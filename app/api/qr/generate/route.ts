@@ -43,8 +43,15 @@ export async function POST(request: NextRequest) {
       createdBy: payload.userId,
     }).returning();
 
-    // Generate QR code image
-    const qrCodeImage = await QRCode.toDataURL(qrCodeString);
+    // Generate QR code image with transparent background
+    const qrCodeImage = await QRCode.toDataURL(qrCodeString, {
+      margin: 2,
+      scale: 10,
+      color: {
+        dark: '#065f46', // emerald-800
+        light: '#00000000', // transparent
+      },
+    });
 
     return NextResponse.json({
       qrCode: qrCodeString,

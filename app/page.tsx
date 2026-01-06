@@ -8,6 +8,8 @@ export default function Home() {
   const [activeModal, setActiveModal] = useState<'login' | 'register' | null>(
     null
   );
+  const [showTC, setShowTC] = useState(false);
+
 
   return (
     <div className="relative min-h-screen overflow-hidden">
@@ -27,7 +29,7 @@ export default function Home() {
       <div className="relative flex min-h-screen flex-col">
         {/* Top navigation bar matching the mock */}
         <header className="w-full bg-white/70 backdrop-blur-md">
-          <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4 sm:px-8 sm:py-5">
+          <nav className="mx-auto flex w-full items-center justify-between px-6 py-4 sm:px-8 sm:py-5">
             <div className="flex items-center gap-4">
               <Link href="/" className="flex items-center gap-3">
                 <span className="inline-flex h-12 w-12 items-center justify-center rounded-lg bg-white shadow-sm">
@@ -72,12 +74,13 @@ export default function Home() {
                 href="#"
                 onClick={(e) => {
                   e.preventDefault();
-                  setActiveModal('register');
+                  setShowTC(true);
                 }}
                 className="relative inline-flex items-center justify-center rounded-full border-2 border-dashed border-emerald-800 bg-white/95 px-12 py-4 text-base font-extrabold tracking-wide text-emerald-800 transition-colors hover:bg-emerald-700 hover:text-white"
               >
                 REGISTER
               </Link>
+
 
               <Link
                 href="#"
@@ -94,23 +97,37 @@ export default function Home() {
         </main>
 
         {/* Auth modals */}
-        {activeModal && (
+        {(activeModal || showTC) && (
           <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 px-4">
             <div
               className="absolute inset-0"
-              onClick={() => setActiveModal(null)}
+              onClick={() => {
+                setActiveModal(null);
+                setShowTC(false);
+              }}
             />
             <div className="relative z-50 w-full max-w-sm rounded-[32px] bg-emerald-700/95 px-8 py-8 text-white shadow-2xl">
               <button
                 type="button"
-                onClick={() => setActiveModal(null)}
+                onClick={() => {
+                  setActiveModal(null);
+                  setShowTC(false);
+                }}
                 className="absolute right-6 top-6 text-2xl text-emerald-50 hover:text-white"
                 aria-label="Close"
               >
                 ✕
               </button>
 
-              {activeModal === 'login' ? (
+              {showTC ? (
+                <TermsAndConditions
+                  onAccept={() => {
+                    setShowTC(false);
+                    setActiveModal('register');
+                  }}
+                  onDecline={() => setShowTC(false)}
+                />
+              ) : activeModal === 'login' ? (
                 <AuthLoginForm onSuccess={() => setActiveModal(null)} />
               ) : (
                 <AuthRegisterForm onSuccess={() => setActiveModal(null)} />
@@ -118,10 +135,49 @@ export default function Home() {
             </div>
           </div>
         )}
+
       </div>
     </div>
   );
 }
+function TermsAndConditions({ onAccept, onDecline }: { onAccept: () => void; onDecline: () => void }) {
+  return (
+    <div className="space-y-4">
+      <h2 className="mb-4 text-center text-2xl font-extrabold tracking-wide">
+        TERMS & CONDITIONS
+      </h2>
+      <div className="max-h-64 overflow-y-auto text-sm text-emerald-50 space-y-3 pr-2 scrollbar-thin scrollbar-thumb-emerald-400 scrollbar-track-emerald-800 text-justify leading-relaxed">
+        <p>By using the Juanttendify application, you agree to the following terms:</p>
+        <div className="space-y-2">
+          <p><strong>1. Account Security:</strong> You are responsible for all activities that occur under your account.</p>
+          <p><strong>2. Attendance Policy:</strong> The application uses precise location data for verification. Falsifying location is strictly prohibited.</p>
+          <p><strong>3. Data Privacy:</strong> We store your name, ID, and attendance records for institutional use.</p>
+          <p><strong>4. Institutional Use:</strong> Data collected is subject to the privacy policies of your respective school/university.</p>
+        </div>
+      </div>
+      <div className="flex gap-4 pt-4">
+        <button
+          onClick={onDecline}
+          className="flex-1 rounded-full border-2 border-emerald-50/50 px-4 py-3 text-xs font-bold hover:bg-emerald-600 transition-colors uppercase tracking-widest"
+        >
+          Decline
+        </button>
+        <button
+          onClick={onAccept}
+          className="flex-1 rounded-full bg-white px-4 py-3 text-xs font-bold text-emerald-800 hover:bg-emerald-100 transition-colors uppercase tracking-widest shadow-lg"
+        >
+          Accept
+        </button>
+        <div className="text-center pt-4">
+          <Link href="/privacy" className="text-xs text-emerald-50/70 hover:text-white underline">
+            Privacy Policy
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 
 type AuthLoginFormProps = {
   onSuccess: () => void;
@@ -247,7 +303,7 @@ function AuthRegisterForm({ onSuccess }: AuthRegisterFormProps) {
     const email = (formData.get('email') as string).trim();
     const password = (formData.get('password') as string).trim();
     const confirm = (formData.get('confirm') as string).trim();
-    const studentId = (formData.get('studentId') as string)?.trim() || undefined;
+    const studentLrn = (formData.get('studentLrn') as string)?.trim() || undefined;
 
     if (password !== confirm) {
       setError('Passwords do not match');
@@ -264,7 +320,7 @@ function AuthRegisterForm({ onSuccess }: AuthRegisterFormProps) {
           email,
           password,
           role,
-          studentId: role === 'student' ? studentId : undefined,
+          studentLrn: role === 'student' ? studentLrn : undefined,
         }),
       });
 
@@ -353,14 +409,14 @@ function AuthRegisterForm({ onSuccess }: AuthRegisterFormProps) {
       {role === 'student' && (
         <div>
           <label
-            htmlFor="reg-student-id"
+            htmlFor="reg-student-lrn"
             className="mb-1 block text-sm font-semibold text-emerald-50"
           >
-            Student ID
+            Student LRN
           </label>
           <input
-            id="reg-student-id"
-            name="studentId"
+            id="reg-student-lrn"
+            name="studentLrn"
             required
             className="w-full rounded-full border-none bg-white px-5 py-3 text-sm font-medium text-emerald-900 shadow-sm outline-none ring-0 focus:ring-2 focus:ring-emerald-400"
           />

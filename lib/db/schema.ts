@@ -7,7 +7,7 @@ export const users = sqliteTable('users', {
   name: text('name').notNull(),
   password: text('password').notNull(), // hashed
   role: text('role').notNull(), // 'student' or 'teacher'
-  studentId: text('student_id'), // for students
+  studentLrn: text('student_lrn'), // for students
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
 });
 
@@ -15,6 +15,9 @@ export const users = sqliteTable('users', {
 export const timePeriods = sqliteTable('time_periods', {
   id: text('id').primaryKey(),
   name: text('name').notNull(), // e.g., "Period 1", "Morning", "Afternoon"
+  strand: text('strand'), // e.g., "STEM", "ICT"
+  section: text('section'), // e.g., "201"
+  subject: text('subject'), // e.g., "Programming"
   startTime: text('start_time').notNull(), // HH:mm format
   endTime: text('end_time').notNull(), // HH:mm format
   lateThreshold: integer('late_threshold').notNull(), // minutes after start time

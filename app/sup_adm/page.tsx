@@ -9,7 +9,7 @@ type User = {
   email: string;
   name: string;
   role: 'student' | 'teacher';
-  studentId: string | null;
+  studentLrn: string | null;
   createdAt: number;
 };
 
@@ -156,7 +156,7 @@ export default function SuperAdminPage() {
       email: formData.get('email') as string,
       name: formData.get('name') as string,
       role: formData.get('role') as 'student' | 'teacher',
-      studentId: formData.get('studentId') as string || null,
+      studentLrn: formData.get('studentLrn') as string || null,
     };
 
     // Only include password if it's provided (for updates, password is optional)
@@ -313,7 +313,7 @@ export default function SuperAdminPage() {
         <div className="absolute inset-0 bg-gradient-to-t from-emerald-700/80 via-emerald-500/40 to-white/85" />
       </div>
 
-      <div className="mx-auto flex min-h-screen max-w-7xl">
+      <div className="mx-auto flex min-h-screen w-full">
         {/* Sidebar */}
         <aside className="flex w-72 flex-col bg-emerald-800/95 px-6 py-8 text-emerald-50">
           <div className="mb-10 flex items-center gap-4">
@@ -551,7 +551,7 @@ function UsersTab({
                 <th className="px-6 py-4 text-left text-sm font-extrabold uppercase tracking-[0.18em] text-emerald-800">Name</th>
                 <th className="px-6 py-4 text-left text-sm font-extrabold uppercase tracking-[0.18em] text-emerald-800">Email</th>
                 <th className="px-6 py-4 text-left text-sm font-extrabold uppercase tracking-[0.18em] text-emerald-800">Role</th>
-                <th className="px-6 py-4 text-left text-sm font-extrabold uppercase tracking-[0.18em] text-emerald-800">Student ID</th>
+                <th className="px-6 py-4 text-left text-sm font-extrabold uppercase tracking-[0.18em] text-emerald-800">Student LRN</th>
                 <th className="px-6 py-4 text-left text-sm font-extrabold uppercase tracking-[0.18em] text-emerald-800">Created</th>
                 <th className="px-6 py-4 text-left text-sm font-extrabold uppercase tracking-[0.18em] text-emerald-800">Actions</th>
               </tr>
@@ -571,7 +571,7 @@ function UsersTab({
                       {user.role.toUpperCase()}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-base text-emerald-800">{user.studentId || '-'}</td>
+                  <td className="px-6 py-4 text-base text-emerald-800">{user.studentLrn || '-'}</td>
                   <td className="px-6 py-4 text-base text-emerald-800">
                     {new Date(user.createdAt).toLocaleDateString()}
                   </td>
@@ -876,12 +876,12 @@ function UserFormModal({
           </div>
           <div>
             <label className="block text-base font-semibold text-emerald-50 mb-2">
-              Student ID (if student)
+              Student LRN (if student)
             </label>
             <input
               type="text"
-              name="studentId"
-              defaultValue={user?.studentId || ''}
+              name="studentLrn"
+              defaultValue={user?.studentLrn || ''}
               className="w-full rounded-full border-none bg-white px-6 py-4 text-base font-medium text-emerald-900 shadow-sm outline-none ring-0 focus:ring-2 focus:ring-emerald-400"
             />
           </div>

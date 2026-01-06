@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Location validation
-    const ACCURACY_THRESHOLD = 50; // meters - if accuracy is worse than this, mark as in_review
+    const ACCURACY_THRESHOLD = 100; // meters - if accuracy is worse than this, mark as in_review
     let locationStatus: 'verified' | 'in_review' | null = null;
     let finalStatus: 'in' | 'late' | 'out' | 'in_review' = 'in';
 

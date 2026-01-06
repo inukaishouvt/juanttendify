@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, startTime, endTime, lateThreshold = 15 } = body;
+    const { name, strand, section, subject, startTime, endTime, lateThreshold = 15 } = body;
 
     if (!name || !startTime || !endTime) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -47,6 +47,9 @@ export async function POST(request: NextRequest) {
     const period = await db.insert(timePeriods).values({
       id: generateId(),
       name,
+      strand,
+      section,
+      subject,
       startTime,
       endTime,
       lateThreshold,

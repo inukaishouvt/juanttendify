@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { email, password, name, role, studentId } = body;
+    const { email, password, name, role, studentLrn } = body;
 
     if (!email || !password || !name || !role) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
       password: hashedPassword,
       name,
       role,
-      studentId: role === 'student' ? studentId : null,
+      studentLrn: role === 'student' ? studentLrn : null,
       createdAt: new Date(),
     }).returning();
 

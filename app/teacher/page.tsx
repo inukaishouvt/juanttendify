@@ -32,11 +32,14 @@ type AttendanceRecord = {
 type Period = {
   id: string;
   name: string;
+  strand?: string;
+  section?: string;
+  subject?: string;
   startTime: string;
   endTime: string;
 };
 
-type TabKey = 'dashboard' | 'attendance' | 'reports' | 'qr';
+type TabKey = 'dashboard' | 'attendance' | 'reports' | 'qr' | 'classes';
 
 export default function TeacherPage() {
   const [token, setToken] = useState<string | null>(null);
@@ -118,7 +121,7 @@ export default function TeacherPage() {
 
   async function fetchAttendance() {
     if (!token) return;
-    setLoading(true);
+    if (attendance.length === 0) setLoading(true);
     try {
       const params = new URLSearchParams();
       if (selectedDate) params.append('date', selectedDate);
@@ -262,7 +265,7 @@ export default function TeacherPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-t from-emerald-700/80 via-emerald-500/40 to-white/85">
-      <div className="mx-auto flex min-h-screen max-w-6xl">
+      <div className="mx-auto flex min-h-screen w-full">
         {/* Sidebar */}
         <aside className="flex w-72 flex-col bg-emerald-800/95 px-6 py-8 text-emerald-50">
           <div className="mb-10 flex items-center gap-4">
@@ -295,6 +298,12 @@ export default function TeacherPage() {
               icon={<QrCode className="w-5 h-5" />}
               active={tab === 'qr'}
               onClick={() => setTab('qr')}
+            />
+            <SidebarLink
+              label="Class Management"
+              icon={<ClipboardList className="w-5 h-5" />}
+              active={tab === 'classes'}
+              onClick={() => setTab('classes')}
             />
           </nav>
 
@@ -379,6 +388,14 @@ export default function TeacherPage() {
                 attendance={attendance}
               />
             )}
+
+            {tab === 'classes' && (
+              <ClassesTab
+                periods={periods}
+                onRefresh={fetchPeriods}
+                token={token!}
+              />
+            )}
           </main>
         </div>
       </div>
@@ -425,7 +442,7 @@ function DashboardTab({
   return (
     <div className="space-y-4">
       <h2 className="text-3xl font-extrabold text-emerald-900">
-        Ma&apos;am Francine&apos;s Dashboard
+        {user.name}&apos;s Dashboard
       </h2>
 
       <div className="grid gap-4 md:grid-cols-[1.4fr_1fr]">
@@ -852,7 +869,7 @@ function QrTab({
   return (
     <div className="space-y-8">
       <h2 className="text-3xl font-extrabold text-emerald-900">
-        QR Code Generator
+        QR Code Generator (Strand + Section with Subject)
       </h2>
 
       <div className="grid gap-8 lg:grid-cols-[1.4fr_1fr]">
@@ -883,7 +900,7 @@ function QrTab({
               onChange={(e) => setSelectedPeriod(e.target.value)}
               className="rounded-full border border-emerald-200 bg-emerald-50 px-5 py-3 text-base text-emerald-800 outline-none focus:ring-2 focus:ring-emerald-400"
             >
-              <option value="">Select subject class</option>
+              <option value="">Select Strand + Section with Subject</option>
               {periods.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.name}
@@ -900,16 +917,18 @@ function QrTab({
           </div>
 
           <div className="mt-6 flex flex-col items-center gap-5">
-            <div className="flex h-80 w-80 items-center justify-center rounded-3xl border-4 border-emerald-700 bg-emerald-50">
+            <div className="flex h-80 w-80 items-center justify-center rounded-3xl border-4 border-emerald-700 bg-emerald-50 relative overflow-hidden">
               {qrImage ? (
-                <img
-                  src={qrImage}
-                  alt="QR Code"
-                  className="h-64 w-64 rounded-xl bg-white p-3"
-                />
+                <div className="relative h-64 w-64">
+                  <img
+                    src={qrImage}
+                    alt="QR Code"
+                    className="h-full w-full object-contain"
+                  />
+                </div>
               ) : (
-                <p className="text-sm font-semibold text-emerald-700">
-                  QR code will appear here
+                <p className="text-sm font-semibold text-emerald-700 text-center px-4">
+                  Select a class and click <br /> "Generate New QR Code"
                 </p>
               )}
             </div>
@@ -974,6 +993,127 @@ function QrTab({
                     )}
                   </span>
                   <span className="truncate font-semibold">{r.student.name}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+type ClassesTabProps = {
+  periods: Period[];
+  onRefresh: () => Promise<void>;
+  token: string;
+};
+
+function ClassesTab({ periods, onRefresh, token }: ClassesTabProps) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const strands = ['STEM', 'ABM', 'HUMSS', 'ICT', 'HE', 'TOPS'];
+
+  async function handleAddClass(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    const formData = new FormData(e.currentTarget);
+    const strand = formData.get('strand') as string;
+    const section = formData.get('section') as string;
+    const subject = formData.get('subject') as string;
+    const startTime = formData.get('startTime') as string;
+    const endTime = formData.get('endTime') as string;
+
+    try {
+      const res = await fetch('/api/periods', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name: `${strand} ${section} - ${subject}`,
+          strand,
+          section,
+          subject,
+          startTime,
+          endTime,
+        }),
+      });
+
+      if (res.ok) {
+        await onRefresh();
+        (e.target as HTMLFormElement).reset();
+      } else {
+        const data = await res.json();
+        setError(data.error ?? 'Failed to add class');
+      }
+    } catch (err) {
+      setError('Failed to add class');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="space-y-8">
+      <h2 className="text-3xl font-extrabold text-emerald-900">Class Management</h2>
+
+      <div className="grid gap-8 lg:grid-cols-[1fr_1.5fr]">
+        <div className="rounded-3xl bg-white p-8 shadow-lg">
+          <h3 className="mb-6 text-xl font-bold text-emerald-900 font-quicksand">Add New Class Mapping</h3>
+          <form onSubmit={handleAddClass} className="space-y-4">
+            <div>
+              <label className="mb-1 block text-sm font-semibold text-emerald-700">Strand</label>
+              <select name="strand" required className="w-full rounded-full border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm text-emerald-800 outline-none focus:ring-2 focus:ring-emerald-400">
+                {strands.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="mb-1 block text-sm font-semibold text-emerald-700">Section</label>
+                <input name="section" type="text" placeholder="e.g. 201" required className="w-full rounded-full border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm text-emerald-800 outline-none focus:ring-2 focus:ring-emerald-400" />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-semibold text-emerald-700">Subject</label>
+                <input name="subject" type="text" placeholder="e.g. Programming" required className="w-full rounded-full border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm text-emerald-800 outline-none focus:ring-2 focus:ring-emerald-400" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="mb-1 block text-sm font-semibold text-emerald-700">Start Time</label>
+                <input name="startTime" type="time" required className="w-full rounded-full border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm text-emerald-800 outline-none focus:ring-2 focus:ring-emerald-400" />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-semibold text-emerald-700">End Time</label>
+                <input name="endTime" type="time" required className="w-full rounded-full border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm text-emerald-800 outline-none focus:ring-2 focus:ring-emerald-400" />
+              </div>
+            </div>
+            {error && <p className="text-sm font-medium text-red-600">{error}</p>}
+            <button type="submit" disabled={loading} className="w-full rounded-full bg-emerald-600 py-4 text-sm font-extrabold text-white transition-colors hover:bg-emerald-700 disabled:bg-emerald-300">
+              {loading ? 'Adding...' : 'Add Class Mapping'}
+            </button>
+          </form>
+        </div>
+
+        <div className="rounded-3xl bg-white p-8 shadow-lg">
+          <h3 className="mb-6 text-xl font-bold text-emerald-900 font-quicksand">My Classes</h3>
+          {periods.length === 0 ? (
+            <p className="text-emerald-700">No classes configured yet.</p>
+          ) : (
+            <div className="space-y-4">
+              {periods.map((p) => (
+                <div key={p.id} className="flex items-center justify-between rounded-2xl bg-emerald-50 p-5 shadow-sm">
+                  <div>
+                    <p className="text-lg font-bold text-emerald-900 font-quicksand">{p.strand} {p.section} - {p.subject}</p>
+                    <p className="text-sm text-emerald-600">{p.startTime} – {p.endTime}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <span className="rounded-full bg-emerald-200 px-3 py-1 text-xs font-bold text-emerald-800">{p.strand}</span>
+                  </div>
                 </div>
               ))}
             </div>
