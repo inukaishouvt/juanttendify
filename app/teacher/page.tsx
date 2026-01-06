@@ -327,7 +327,7 @@ export default function TeacherPage() {
                 Juan Sumulong Memorial Junior College
               </p>
               <p className="text-2xl font-bold text-emerald-900">
-                Ma&apos;am {user.name}&apos;s Dashboard
+                {user.name}&apos;s Dashboard
               </p>
             </div>
             <div className="flex items-center gap-5">
@@ -353,6 +353,7 @@ export default function TeacherPage() {
                 selectedDate={selectedDate}
                 onDateChange={setSelectedDate}
                 onNavigateToAttendance={() => setTab('attendance')}
+                user={user}
               />
             )}
 
@@ -430,6 +431,7 @@ type DashboardTabProps = {
   selectedDate: string;
   onDateChange: (value: string) => void;
   onNavigateToAttendance: () => void;
+  user: any;
 };
 
 function DashboardTab({
@@ -438,6 +440,7 @@ function DashboardTab({
   selectedDate,
   onDateChange,
   onNavigateToAttendance,
+  user,
 }: DashboardTabProps) {
   return (
     <div className="space-y-4">
