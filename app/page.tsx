@@ -262,9 +262,6 @@ function AuthLoginForm({ onSuccess }: AuthLoginFormProps) {
           required
           className="w-full rounded-full border-none bg-white px-5 py-3 text-sm font-medium text-emerald-900 shadow-sm outline-none ring-0 focus:ring-2 focus:ring-emerald-400"
         />
-        <div className="mt-2 text-right text-xs text-emerald-50/80">
-          Forgot Password?
-        </div>
       </div>
 
       {error && (
