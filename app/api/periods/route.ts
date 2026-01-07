@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { timePeriods } from '@/lib/db/schema';
 import { verifyToken } from '@/lib/auth';
+import { generateId } from '@/lib/utils';
 
 export async function GET(request: NextRequest) {
   try {
@@ -43,7 +44,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const { generateId } = await import('@/lib/utils');
     const period = await db.insert(timePeriods).values({
       id: generateId(),
       name,
