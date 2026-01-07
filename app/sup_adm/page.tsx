@@ -71,6 +71,17 @@ export default function SuperAdminPage() {
     fetchAllData();
   }, []);
 
+  // Auto-refresh every 10 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // Refresh statistics and attendance silently
+      void fetchAttendance();
+      void fetchStats();
+      void fetchQRCodes();
+    }, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
   const fetchAllData = async () => {
     setLoading(true);
     try {
