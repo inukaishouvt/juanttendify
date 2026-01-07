@@ -21,6 +21,7 @@ export const timePeriods = sqliteTable('time_periods', {
   startTime: text('start_time').notNull(), // HH:mm format
   endTime: text('end_time').notNull(), // HH:mm format
   lateThreshold: integer('late_threshold').notNull(), // minutes after start time
+  teacherId: text('teacher_id').references(() => users.id), // teacher who owns this period
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
 });
 

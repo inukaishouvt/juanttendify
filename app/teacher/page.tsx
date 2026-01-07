@@ -37,6 +37,8 @@ type Period = {
   subject?: string;
   startTime: string;
   endTime: string;
+  lateThreshold: number;
+  teacherId?: string;
 };
 
 type TabKey = 'dashboard' | 'attendance' | 'reports' | 'qr' | 'classes';
@@ -1030,6 +1032,7 @@ function ClassesTab({ periods, onRefresh, token }: ClassesTabProps) {
     const subject = formData.get('subject') as string;
     const startTime = formData.get('startTime') as string;
     const endTime = formData.get('endTime') as string;
+    const lateThreshold = formData.get('lateThreshold') as string;
 
     try {
       const res = await fetch('/api/periods', {
@@ -1045,6 +1048,7 @@ function ClassesTab({ periods, onRefresh, token }: ClassesTabProps) {
           subject,
           startTime,
           endTime,
+          lateThreshold: lateThreshold || 15,
         }),
       });
 
@@ -1096,6 +1100,10 @@ function ClassesTab({ periods, onRefresh, token }: ClassesTabProps) {
                 <input name="endTime" type="time" required className="w-full rounded-full border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm text-emerald-800 outline-none focus:ring-2 focus:ring-emerald-400" />
               </div>
             </div>
+            <div>
+              <label className="mb-1 block text-sm font-semibold text-emerald-700">Late Threshold (minutes)</label>
+              <input name="lateThreshold" type="number" defaultValue="15" min="0" className="w-full rounded-full border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm text-emerald-800 outline-none focus:ring-2 focus:ring-emerald-400" />
+            </div>
             {error && <p className="text-sm font-medium text-red-600">{error}</p>}
             <button type="submit" disabled={loading} className="w-full rounded-full bg-emerald-600 py-4 text-sm font-extrabold text-white transition-colors hover:bg-emerald-700 disabled:bg-emerald-300">
               {loading ? 'Adding...' : 'Add Class Mapping'}
@@ -1115,8 +1123,9 @@ function ClassesTab({ periods, onRefresh, token }: ClassesTabProps) {
                     <p className="text-lg font-bold text-emerald-900 font-quicksand">{p.strand} {p.section} - {p.subject}</p>
                     <p className="text-sm text-emerald-600">{p.startTime} – {p.endTime}</p>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex flex-col items-end gap-2">
                     <span className="rounded-full bg-emerald-200 px-3 py-1 text-xs font-bold text-emerald-800">{p.strand}</span>
+                    <span className="text-xs font-medium text-emerald-600">Late after {p.lateThreshold}m</span>
                   </div>
                 </div>
               ))}

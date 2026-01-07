@@ -3,6 +3,7 @@ import { db } from '@/lib/db';
 import { timePeriods } from '@/lib/db/schema';
 import { verifyToken } from '@/lib/auth';
 import { generateId } from '@/lib/utils';
+import { eq } from 'drizzle-orm';
 
 export async function GET(request: NextRequest) {
   try {
@@ -16,7 +17,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
-    const periods = await db.select().from(timePeriods);
+    const periods = await db.select().from(timePeriods).where(eq(timePeriods.teacherId, payload.userId));
 
     return NextResponse.json({ periods });
   } catch (error) {
@@ -52,7 +53,8 @@ export async function POST(request: NextRequest) {
       subject,
       startTime,
       endTime,
-      lateThreshold,
+      lateThreshold: Number(lateThreshold),
+      teacherId: payload.userId,
       createdAt: new Date(),
     }).returning();
 
