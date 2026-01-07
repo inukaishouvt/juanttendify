@@ -53,6 +53,7 @@ export default function TeacherPage() {
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [qrImage, setQrImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [qrLoading, setQrLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<TabKey>('dashboard');
   const [filterStatus, setFilterStatus] = useState<
@@ -96,7 +97,7 @@ export default function TeacherPage() {
     if (tab !== 'dashboard' && tab !== 'attendance' && tab !== 'qr') return;
 
     const intervalId = setInterval(() => {
-      void fetchAttendance();
+      void fetchAttendance(true);
     }, 5000); // Refresh every 5 seconds
 
     return () => clearInterval(intervalId);
@@ -119,9 +120,9 @@ export default function TeacherPage() {
     }
   }
 
-  async function fetchAttendance() {
+  async function fetchAttendance(isSilent = false) {
     if (!token) return;
-    if (attendance.length === 0) setLoading(true);
+    if (attendance.length === 0 && !isSilent) setLoading(true);
     try {
       const params = new URLSearchParams();
       if (selectedDate) params.append('date', selectedDate);
@@ -140,7 +141,7 @@ export default function TeacherPage() {
       console.error('Error fetching attendance:', err);
       setError('Failed to load attendance');
     } finally {
-      setLoading(false);
+      if (!isSilent) setLoading(false);
     }
   }
 
@@ -150,7 +151,7 @@ export default function TeacherPage() {
       return;
     }
 
-    setLoading(true);
+    setQrLoading(true);
     try {
       const res = await fetch('/api/qr/generate', {
         method: 'POST',
@@ -178,7 +179,7 @@ export default function TeacherPage() {
       console.error('Error generating QR code:', err);
       setError('Failed to generate QR code');
     } finally {
-      setLoading(false);
+      setQrLoading(false);
     }
   }
 
@@ -382,7 +383,7 @@ export default function TeacherPage() {
                 selectedPeriod={selectedPeriod}
                 setSelectedPeriod={setSelectedPeriod}
                 generateQR={generateQR}
-                loading={loading}
+                qrLoading={qrLoading}
                 qrCode={qrCode}
                 qrImage={qrImage}
                 error={error}
@@ -847,7 +848,7 @@ type QrTabProps = {
   selectedPeriod: string;
   setSelectedPeriod: (v: string) => void;
   generateQR: () => void;
-  loading: boolean;
+  qrLoading: boolean;
   qrCode: string | null;
   qrImage: string | null;
   error: string | null;
@@ -861,7 +862,7 @@ function QrTab({
   selectedPeriod,
   setSelectedPeriod,
   generateQR,
-  loading,
+  qrLoading,
   qrCode,
   qrImage,
   error,
@@ -946,10 +947,10 @@ function QrTab({
               <button
                 type="button"
                 onClick={generateQR}
-                disabled={loading || !selectedPeriod}
+                disabled={qrLoading || !selectedPeriod}
                 className="flex-1 rounded-full bg-emerald-600 px-6 py-4 text-sm font-extrabold tracking-wide text-white shadow-sm transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-300"
               >
-                {loading ? 'Generating…' : 'Generate New QR Code'}
+                {qrLoading ? 'Generating…' : 'Generate New QR Code'}
               </button>
 
               <button
