@@ -13,6 +13,12 @@ const GEOFENCE_POLYGON: [number, number][] = [
     [14.57310541395725, 121.1329594813601],
 ];
 
+// Temporary allowed coordinates (e.g. for events or testing)
+// [latitude, longitude, radiusInMeters]
+const SPECIAL_AREAS: [number, number, number][] = [
+    [14.621587, 121.088182, 100], // Temporary area requested by user
+];
+
 // Remove duplicate points
 const UNIQUE_POLYGON = GEOFENCE_POLYGON.filter(
     (point, index, self) =>
@@ -52,6 +58,24 @@ function isPointInPolygon(
 }
 
 /**
+ * Calculate distance between two points in meters using Haversine formula
+ */
+function getDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    const R = 6371e3; // Earth radius in meters
+    const φ1 = (lat1 * Math.PI) / 180;
+    const φ2 = (lat2 * Math.PI) / 180;
+    const Δφ = ((lat2 - lat1) * Math.PI) / 180;
+    const Δλ = ((lon2 - lon1) * Math.PI) / 180;
+
+    const a =
+        Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+        Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    return R * c;
+}
+
+/**
  * Check if a scan location is within the valid geofence area
  * @param scanLat Scan latitude in degrees
  * @param scanLon Scan longitude in degrees
@@ -61,8 +85,17 @@ export function isWithinGeofence(
     scanLat: number,
     scanLon: number
 ): { isWithin: boolean } {
-    const isWithin = isPointInPolygon(scanLat, scanLon, UNIQUE_POLYGON);
-    return { isWithin };
+    // 1. Check main campus polygon
+    const inPolygon = isPointInPolygon(scanLat, scanLon, UNIQUE_POLYGON);
+    if (inPolygon) return { isWithin: true };
+
+    // 2. Check special/temporary areas
+    for (const [areaLat, areaLon, radius] of SPECIAL_AREAS) {
+        const distance = getDistance(scanLat, scanLon, areaLat, areaLon);
+        if (distance <= radius) return { isWithin: true };
+    }
+
+    return { isWithin: false };
 }
 
 /**
