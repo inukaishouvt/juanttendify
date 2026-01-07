@@ -17,6 +17,21 @@ export function formatTime(date: Date): string {
   return date.toTimeString().slice(0, 5); // HH:mm
 }
 
+export function formatTime12h(timeString: string | number | Date): string {
+  if (!timeString) return '--';
+  const date = typeof timeString === 'string' && timeString.includes(':')
+    ? new Date(`2000-01-01T${timeString}:00`)
+    : new Date(timeString);
+
+  if (isNaN(date.getTime())) return typeof timeString === 'string' ? timeString : '--';
+
+  return date.toLocaleTimeString([], {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true
+  });
+}
+
 export function parseTime(timeString: string): { hours: number; minutes: number } {
   const [hours, minutes] = timeString.split(':').map(Number);
   return { hours, minutes };
@@ -26,11 +41,11 @@ export function isTimeBetween(time: Date, startTime: string, endTime: string): b
   const now = { hours: time.getHours(), minutes: time.getMinutes() };
   const start = parseTime(startTime);
   const end = parseTime(endTime);
-  
+
   const nowMinutes = now.hours * 60 + now.minutes;
   const startMinutes = start.hours * 60 + start.minutes;
   const endMinutes = end.hours * 60 + end.minutes;
-  
+
   return nowMinutes >= startMinutes && nowMinutes <= endMinutes;
 }
 

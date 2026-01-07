@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { LayoutDashboard, Users, ClipboardList, Clock, Smartphone, LogOut } from 'lucide-react';
+import { formatTime12h } from '@/lib/utils';
 
 type User = {
   id: string;
@@ -656,9 +657,7 @@ function AttendanceTab({
                     <td className="px-6 py-4 text-base text-emerald-800">{record.period.name}</td>
                     <td className="px-6 py-4 text-base text-emerald-800">{record.date}</td>
                     <td className="px-6 py-4 text-base text-emerald-800">
-                      {record.scannedAt
-                        ? new Date(record.scannedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                        : '--'}
+                      {formatTime12h(record.scannedAt)}
                     </td>
                     <td className="px-6 py-4">
                       <span
@@ -755,8 +754,8 @@ function PeriodsTab({
               {periods.map((period) => (
                 <tr key={period.id} className="border-b border-emerald-50 last:border-b-0">
                   <td className="px-6 py-4 text-base text-emerald-900 font-semibold">{period.name}</td>
-                  <td className="px-6 py-4 text-base text-emerald-800">{period.startTime}</td>
-                  <td className="px-6 py-4 text-base text-emerald-800">{period.endTime}</td>
+                  <td className="px-6 py-4 text-base text-emerald-800">{formatTime12h(period.startTime)}</td>
+                  <td className="px-6 py-4 text-base text-emerald-800">{formatTime12h(period.endTime)}</td>
                   <td className="px-6 py-4 text-base text-emerald-800">{period.lateThreshold} min</td>
                   <td className="px-6 py-4">
                     <div className="flex gap-2">
@@ -809,10 +808,10 @@ function QRCodesTab({ qrCodes, periods }: { qrCodes: QRCode[]; periods: Period[]
                     <td className="px-6 py-4 text-base text-emerald-800">{period?.name || 'N/A'}</td>
                     <td className="px-6 py-4 text-base text-emerald-800">{qr.date}</td>
                     <td className="px-6 py-4 text-base text-emerald-800">
-                      {new Date(qr.expiresAt).toLocaleString()}
+                      {new Date(qr.expiresAt).toLocaleString([], { hour12: true, month: 'numeric', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}
                     </td>
                     <td className="px-6 py-4 text-base text-emerald-800">
-                      {new Date(qr.createdAt).toLocaleString()}
+                      {new Date(qr.createdAt).toLocaleString([], { hour12: true, month: 'numeric', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}
                     </td>
                   </tr>
                 );

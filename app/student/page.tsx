@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 import Link from 'next/link';
 import Image from 'next/image';
+import { formatTime12h } from '@/lib/utils';
 
 export default function StudentPage() {
   const [token, setToken] = useState<string | null>(null);
@@ -448,10 +449,7 @@ export default function StudentPage() {
                       {result.period?.name}
                     </p>
                     <p className="mt-2 text-[11px] font-semibold text-emerald-800">
-                      {new Date(result.attendance.scannedAt).toLocaleTimeString(
-                        undefined,
-                        { hour: '2-digit', minute: '2-digit' }
-                      )}
+                      {formatTime12h(result.attendance.scannedAt)}
                     </p>
                     <div className="mt-3 flex flex-col items-center gap-1.5">
                       <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-600 text-xl text-white">

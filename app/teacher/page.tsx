@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Home, ClipboardList, BarChart3, QrCode, LogOut } from 'lucide-react';
+import { formatTime12h } from '@/lib/utils';
 
 type AttendanceRecord = {
   attendance: {
@@ -470,7 +471,7 @@ function DashboardTab({
                 >
                   <p>{p.name}</p>
                   <p className="mt-2 text-xs text-emerald-600">
-                    {p.startTime} – {p.endTime}
+                    {formatTime12h(p.startTime)} – {formatTime12h(p.endTime)}
                   </p>
                 </div>
               ))
@@ -715,9 +716,7 @@ function AttendanceTab({
                     )}
                   </div>
                   <div className="text-center text-emerald-800">
-                    {r.attendance.scannedAt
-                      ? new Date(r.attendance.scannedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                      : '--'}
+                    {formatTime12h(r.attendance.scannedAt)}
                   </div>
                   <div className="flex justify-center">
                     <span className={`rounded-full px-6 py-2 text-sm font-bold ${colorClasses}`}>
@@ -990,10 +989,7 @@ function QrTab({
                   className="flex items-center justify-between rounded-full bg-emerald-50 px-5 py-3"
                 >
                   <span>
-                    {new Date(r.attendance.scannedAt).toLocaleTimeString(
-                      undefined,
-                      { hour: '2-digit', minute: '2-digit' }
-                    )}
+                    {formatTime12h(r.attendance.scannedAt)}
                   </span>
                   <span className="truncate font-semibold">{r.student.name}</span>
                 </div>
@@ -1252,7 +1248,7 @@ function ClassesTab({ periods, onRefresh, token }: ClassesTabProps) {
                 <div key={p.id} className="flex items-center justify-between rounded-2xl bg-emerald-50 p-5 shadow-sm">
                   <div>
                     <p className="text-lg font-bold text-emerald-900 font-quicksand">{p.strand} {p.section} - {p.subject}</p>
-                    <p className="text-sm text-emerald-600">{p.startTime} – {p.endTime}</p>
+                    <p className="text-sm text-emerald-600">{formatTime12h(p.startTime)} – {formatTime12h(p.endTime)}</p>
                   </div>
                   <div className="flex flex-col items-end gap-2">
                     <div className="flex gap-2">
