@@ -446,7 +446,7 @@ function DashboardTab({
   return (
     <div className="space-y-4">
       <h2 className="text-3xl font-extrabold text-emerald-900">
-        {user.name}&apos;s Dashboard
+        Your Dashboard
       </h2>
 
       <div className="grid gap-4 md:grid-cols-[1.4fr_1fr]">
