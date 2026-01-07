@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { LayoutDashboard, Users, ClipboardList, Clock, Smartphone, LogOut } from 'lucide-react';
-import { formatTime12h } from '@/lib/utils';
+import { formatTime12h, formatDateManila, formatDateTimeManila, getManilaToday } from '@/lib/utils';
 
 type User = {
   id: string;
@@ -585,7 +585,7 @@ function UsersTab({
                   </td>
                   <td className="px-6 py-4 text-base text-emerald-800">{user.studentLrn || '-'}</td>
                   <td className="px-6 py-4 text-base text-emerald-800">
-                    {new Date(user.createdAt).toLocaleDateString()}
+                    {formatDateManila(user.createdAt)}
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex gap-2">
@@ -808,10 +808,10 @@ function QRCodesTab({ qrCodes, periods }: { qrCodes: QRCode[]; periods: Period[]
                     <td className="px-6 py-4 text-base text-emerald-800">{period?.name || 'N/A'}</td>
                     <td className="px-6 py-4 text-base text-emerald-800">{qr.date}</td>
                     <td className="px-6 py-4 text-base text-emerald-800">
-                      {new Date(qr.expiresAt).toLocaleString([], { hour12: true, month: 'numeric', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                      {formatDateTimeManila(qr.expiresAt, { month: 'numeric', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}
                     </td>
                     <td className="px-6 py-4 text-base text-emerald-800">
-                      {new Date(qr.createdAt).toLocaleString([], { hour12: true, month: 'numeric', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                      {formatDateTimeManila(qr.createdAt, { month: 'numeric', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}
                     </td>
                   </tr>
                 );

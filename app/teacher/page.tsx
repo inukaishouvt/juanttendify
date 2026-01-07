@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Home, ClipboardList, BarChart3, QrCode, LogOut } from 'lucide-react';
-import { formatTime12h } from '@/lib/utils';
+import { formatTime12h, formatDateManila, getManilaToday } from '@/lib/utils';
 
 type AttendanceRecord = {
   attendance: {
@@ -49,9 +49,7 @@ export default function TeacherPage() {
   const [user, setUser] = useState<any>(null);
   const [periods, setPeriods] = useState<Period[]>([]);
   const [selectedPeriod, setSelectedPeriod] = useState<string>('');
-  const [selectedDate, setSelectedDate] = useState<string>(
-    new Date().toISOString().split('T')[0]
-  );
+  const [selectedDate, setSelectedDate] = useState<string>(getManilaToday());
   const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [qrImage, setQrImage] = useState<string | null>(null);
@@ -336,7 +334,7 @@ export default function TeacherPage() {
             </div>
             <div className="flex items-center gap-5">
               <div className="rounded-xl bg-emerald-50 px-5 py-3 text-sm font-semibold text-emerald-700">
-                {new Date(selectedDate).toLocaleDateString(undefined, {
+                {formatDateManila(selectedDate, {
                   weekday: 'short',
                   month: 'short',
                   day: 'numeric',
@@ -774,7 +772,7 @@ function ReportsTab({ summary, selectedDate }: ReportsTabProps) {
       <p className="text-base text-emerald-700">
         Quick overview of attendance for{' '}
         <span className="font-semibold">
-          {new Date(selectedDate).toLocaleDateString()}
+          {formatDateManila(selectedDate)}
         </span>
         .
       </p>
@@ -886,7 +884,7 @@ function QrTab({
                   : 'Select a class'}
               </p>
               <p className="text-base text-emerald-600">
-                {new Date(selectedDate).toLocaleDateString(undefined, {
+                {formatDateManila(selectedDate, {
                   weekday: 'long',
                   month: 'long',
                   day: 'numeric',

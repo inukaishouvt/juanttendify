@@ -25,11 +25,52 @@ export function formatTime12h(timeString: string | number | Date): string {
 
   if (isNaN(date.getTime())) return typeof timeString === 'string' ? timeString : '--';
 
-  return date.toLocaleTimeString([], {
+  return date.toLocaleTimeString('en-US', {
     hour: 'numeric',
     minute: '2-digit',
-    hour12: true
+    hour12: true,
+    timeZone: 'Asia/Manila'
   });
+}
+
+export function formatDateManila(date: string | number | Date, options?: Intl.DateTimeFormatOptions): string {
+  if (!date) return '--';
+
+  let d: Date;
+  if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    // For YYYY-MM-DD, append a time and use the Manila timezone to avoid day-shifting
+    d = new Date(`${date}T12:00:00`);
+  } else {
+    d = new Date(date);
+  }
+
+  if (isNaN(d.getTime())) return '--';
+
+  return d.toLocaleDateString('en-US', {
+    timeZone: 'Asia/Manila',
+    ...options
+  });
+}
+
+export function formatDateTimeManila(date: string | number | Date, options?: Intl.DateTimeFormatOptions): string {
+  if (!date) return '--';
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return '--';
+
+  return d.toLocaleString('en-US', {
+    timeZone: 'Asia/Manila',
+    hour12: true,
+    ...options
+  });
+}
+
+export function getManilaToday(): string {
+  return new Intl.DateTimeFormat('en-ZA', {
+    timeZone: 'Asia/Manila',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date()).replace(/\//g, '-');
 }
 
 export function parseTime(timeString: string): { hours: number; minutes: number } {
