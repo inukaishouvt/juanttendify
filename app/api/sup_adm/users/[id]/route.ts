@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { users, attendance } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
+import { hashPassword } from '@/lib/auth';
 
 function isSuperAdminRequest(request: NextRequest): boolean {
   const referer = request.headers.get('referer');
@@ -19,13 +20,17 @@ export async function PATCH(
   try {
     const { id: userId } = await params;
     const body = await request.json();
-    const { name, email, role, studentLrn } = body;
+    const { name, email, role, studentLrn, password } = body;
 
     const updateData: any = {};
     if (name) updateData.name = name;
     if (email) updateData.email = email;
     if (role) updateData.role = role;
     if (studentLrn !== undefined) updateData.studentLrn = studentLrn;
+
+    if (password) {
+      updateData.password = await hashPassword(password);
+    }
 
     const updated = await db
       .update(users)
