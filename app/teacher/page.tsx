@@ -1017,7 +1017,7 @@ function ClassesTab({ periods, onRefresh, token }: ClassesTabProps) {
   const [error, setError] = useState<string | null>(null);
 
   const [editingPeriod, setEditingPeriod] = useState<Period | null>(null);
-  const strands = ['STEM', 'ABM', 'HUMSS', 'ICT', 'HE', 'TOPS'];
+  const strands = ['STEM', 'ABM', 'HUMSS', 'ICT', 'HE/TOPS'];
 
   async function handleAddClass(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
