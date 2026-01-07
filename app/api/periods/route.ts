@@ -17,7 +17,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
-    const periods = await db.select().from(timePeriods).where(eq(timePeriods.teacherId, payload.userId));
+    let periods;
+    if (payload.role === 'teacher') {
+      periods = await db.select().from(timePeriods).where(eq(timePeriods.teacherId, payload.userId));
+    } else if (payload.role === 'secretary' || payload.role === 'sup_adm') {
+      periods = await db.select().from(timePeriods);
+    } else {
+      periods = [];
+    }
 
     return NextResponse.json({ periods });
   } catch (error) {
@@ -34,7 +41,7 @@ export async function POST(request: NextRequest) {
     }
 
     const payload = verifyToken(token);
-    if (!payload || payload.role !== 'teacher') {
+    if (!payload || (payload.role !== 'teacher' && payload.role !== 'secretary')) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 

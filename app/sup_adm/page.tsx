@@ -887,6 +887,7 @@ function UserFormModal({
               className="w-full rounded-full border-none bg-white px-6 py-4 text-base font-medium text-emerald-900 shadow-sm outline-none ring-0 focus:ring-2 focus:ring-emerald-400"
             >
               <option value="student">Student</option>
+              <option value="secretary">Secretary</option>
               <option value="teacher">Teacher</option>
             </select>
           </div>

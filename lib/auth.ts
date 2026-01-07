@@ -5,7 +5,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-this';
 
 export interface TokenPayload {
   userId: string;
-  role: 'student' | 'teacher';
+  role: 'student' | 'teacher' | 'secretary' | 'sup_adm';
   email: string;
 }
 
