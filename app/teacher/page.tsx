@@ -1019,6 +1019,7 @@ function ClassesTab({ periods, onRefresh, token }: ClassesTabProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [editingPeriod, setEditingPeriod] = useState<Period | null>(null);
   const strands = ['STEM', 'ABM', 'HUMSS', 'ICT', 'HE', 'TOPS'];
 
   async function handleAddClass(e: React.FormEvent<HTMLFormElement>) {
@@ -1066,47 +1067,180 @@ function ClassesTab({ periods, onRefresh, token }: ClassesTabProps) {
     }
   }
 
+  async function handleUpdateClass(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!editingPeriod) return;
+
+    setLoading(true);
+    setError(null);
+
+    const formData = new FormData(e.currentTarget);
+    const strand = formData.get('strand') as string;
+    const section = formData.get('section') as string;
+    const subject = formData.get('subject') as string;
+    const startTime = formData.get('startTime') as string;
+    const endTime = formData.get('endTime') as string;
+    const lateThreshold = formData.get('lateThreshold') as string;
+
+    try {
+      const res = await fetch(`/api/periods/${editingPeriod.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name: `${strand} ${section} - ${subject}`,
+          strand,
+          section,
+          subject,
+          startTime,
+          endTime,
+          lateThreshold: lateThreshold || 15,
+        }),
+      });
+
+      if (res.ok) {
+        await onRefresh();
+        setEditingPeriod(null);
+        (e.target as HTMLFormElement).reset();
+      } else {
+        const data = await res.json();
+        setError(data.error ?? 'Failed to update class');
+      }
+    } catch (err) {
+      setError('Failed to update class');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleDeleteClass(id: string) {
+    if (!confirm('Are you sure you want to delete this class?')) return;
+
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/periods/${id}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (res.ok) {
+        await onRefresh();
+      } else {
+        const data = await res.json();
+        setError(data.error ?? 'Failed to delete class');
+      }
+    } catch (err) {
+      setError('Failed to delete class');
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <div className="space-y-8">
       <h2 className="text-3xl font-extrabold text-emerald-900">Class Management</h2>
 
       <div className="grid gap-8 lg:grid-cols-[1fr_1.5fr]">
         <div className="rounded-3xl bg-white p-8 shadow-lg">
-          <h3 className="mb-6 text-xl font-bold text-emerald-900 font-quicksand">Add New Class Mapping</h3>
-          <form onSubmit={handleAddClass} className="space-y-4">
+          <h3 className="mb-6 text-xl font-bold text-emerald-900 font-quicksand">
+            {editingPeriod ? 'Edit Class Mapping' : 'Add New Class Mapping'}
+          </h3>
+          <form onSubmit={editingPeriod ? handleUpdateClass : handleAddClass} className="space-y-4">
+            {editingPeriod && (
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setEditingPeriod(null)}
+                  className="text-xs font-semibold text-red-600 hover:underline"
+                >
+                  Cancel Edit
+                </button>
+              </div>
+            )}
             <div>
               <label className="mb-1 block text-sm font-semibold text-emerald-700">Strand</label>
-              <select name="strand" required className="w-full rounded-full border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm text-emerald-800 outline-none focus:ring-2 focus:ring-emerald-400">
+              <select
+                name="strand"
+                required
+                defaultValue={editingPeriod?.strand}
+                key={editingPeriod ? `edit-strand-${editingPeriod.id}` : 'add-strand'}
+                className="w-full rounded-full border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm text-emerald-800 outline-none focus:ring-2 focus:ring-emerald-400"
+              >
                 {strands.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="mb-1 block text-sm font-semibold text-emerald-700">Section</label>
-                <input name="section" type="text" placeholder="e.g. 201" required className="w-full rounded-full border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm text-emerald-800 outline-none focus:ring-2 focus:ring-emerald-400" />
+                <input
+                  name="section"
+                  type="text"
+                  placeholder="e.g. 201"
+                  required
+                  defaultValue={editingPeriod?.section}
+                  key={editingPeriod ? `edit-section-${editingPeriod.id}` : 'add-section'}
+                  className="w-full rounded-full border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm text-emerald-800 outline-none focus:ring-2 focus:ring-emerald-400"
+                />
               </div>
               <div>
                 <label className="mb-1 block text-sm font-semibold text-emerald-700">Subject</label>
-                <input name="subject" type="text" placeholder="e.g. Programming" required className="w-full rounded-full border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm text-emerald-800 outline-none focus:ring-2 focus:ring-emerald-400" />
+                <input
+                  name="subject"
+                  type="text"
+                  placeholder="e.g. Programming"
+                  required
+                  defaultValue={editingPeriod?.subject}
+                  key={editingPeriod ? `edit-subject-${editingPeriod.id}` : 'add-subject'}
+                  className="w-full rounded-full border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm text-emerald-800 outline-none focus:ring-2 focus:ring-emerald-400"
+                />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="mb-1 block text-sm font-semibold text-emerald-700">Start Time</label>
-                <input name="startTime" type="time" required className="w-full rounded-full border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm text-emerald-800 outline-none focus:ring-2 focus:ring-emerald-400" />
+                <input
+                  name="startTime"
+                  type="time"
+                  required
+                  defaultValue={editingPeriod?.startTime}
+                  key={editingPeriod ? `edit-start-${editingPeriod.id}` : 'add-start'}
+                  className="w-full rounded-full border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm text-emerald-800 outline-none focus:ring-2 focus:ring-emerald-400"
+                />
               </div>
               <div>
                 <label className="mb-1 block text-sm font-semibold text-emerald-700">End Time</label>
-                <input name="endTime" type="time" required className="w-full rounded-full border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm text-emerald-800 outline-none focus:ring-2 focus:ring-emerald-400" />
+                <input
+                  name="endTime"
+                  type="time"
+                  required
+                  defaultValue={editingPeriod?.endTime}
+                  key={editingPeriod ? `edit-end-${editingPeriod.id}` : 'add-end'}
+                  className="w-full rounded-full border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm text-emerald-800 outline-none focus:ring-2 focus:ring-emerald-400"
+                />
               </div>
             </div>
             <div>
               <label className="mb-1 block text-sm font-semibold text-emerald-700">Late Threshold (minutes)</label>
-              <input name="lateThreshold" type="number" defaultValue="15" min="0" className="w-full rounded-full border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm text-emerald-800 outline-none focus:ring-2 focus:ring-emerald-400" />
+              <input
+                name="lateThreshold"
+                type="number"
+                defaultValue={editingPeriod ? editingPeriod.lateThreshold : "15"}
+                min="0"
+                key={editingPeriod ? `edit-late-${editingPeriod.id}` : 'add-late'}
+                className="w-full rounded-full border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm text-emerald-800 outline-none focus:ring-2 focus:ring-emerald-400"
+              />
             </div>
             {error && <p className="text-sm font-medium text-red-600">{error}</p>}
-            <button type="submit" disabled={loading} className="w-full rounded-full bg-emerald-600 py-4 text-sm font-extrabold text-white transition-colors hover:bg-emerald-700 disabled:bg-emerald-300">
-              {loading ? 'Adding...' : 'Add Class Mapping'}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full rounded-full bg-emerald-600 py-4 text-sm font-extrabold text-white transition-colors hover:bg-emerald-700 disabled:bg-emerald-300"
+            >
+              {loading ? (editingPeriod ? 'Updating...' : 'Adding...') : (editingPeriod ? 'Update Class Mapping' : 'Add Class Mapping')}
             </button>
           </form>
         </div>
@@ -1124,7 +1258,25 @@ function ClassesTab({ periods, onRefresh, token }: ClassesTabProps) {
                     <p className="text-sm text-emerald-600">{p.startTime} – {p.endTime}</p>
                   </div>
                   <div className="flex flex-col items-end gap-2">
-                    <span className="rounded-full bg-emerald-200 px-3 py-1 text-xs font-bold text-emerald-800">{p.strand}</span>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setEditingPeriod(p)}
+                        className="rounded-full bg-emerald-100 p-2 text-emerald-600 transition-colors hover:bg-emerald-200"
+                        title="Edit Class"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                      </button>
+                      <button
+                        onClick={() => handleDeleteClass(p.id)}
+                        className="rounded-full bg-red-100 p-2 text-red-600 transition-colors hover:bg-red-200"
+                        title="Delete Class"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                      </button>
+                    </div>
+                    <span className="rounded-full bg-emerald-200 px-3 py-1 text-xs font-bold text-emerald-800">
+                      {p.strand}
+                    </span>
                     <span className="text-xs font-medium text-emerald-600">Late after {p.lateThreshold}m</span>
                   </div>
                 </div>
