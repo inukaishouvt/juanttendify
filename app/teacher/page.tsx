@@ -9,7 +9,7 @@ type AttendanceRecord = {
   attendance: {
     id: string;
     status: 'in' | 'late' | 'out' | 'in_review';
-    scannedAt: string;
+    scannedAt: string | number;
     date: string;
     latitude: number | null;
     longitude: number | null;
@@ -455,7 +455,7 @@ function DashboardTab({
         {/* Subject classes */}
         <div className="rounded-3xl bg-emerald-700/95 p-5 text-white shadow-lg">
           <h3 className="mb-4 text-base font-semibold tracking-[0.15em]">
-            SUBJECT CLASSES
+            CLASS SCHEDULE
           </h3>
           <div className="grid gap-4 sm:grid-cols-2">
             {periods.length === 0 ? (
@@ -531,11 +531,11 @@ function DashboardTab({
         </div>
       </div>
 
-      {/* Homeroom advisory row */}
+      {/* Attendance calendar row */}
       <div className="flex flex-col items-start justify-between gap-4 rounded-3xl bg-emerald-800/95 px-8 py-6 text-white shadow-lg sm:flex-row sm:items-center">
         <div>
           <p className="text-sm font-semibold tracking-[0.15em]">
-            HOMEROOM ADVISORY
+            ATTENDANCE CALENDAR
           </p>
           <p className="text-base">Select date to review attendance</p>
         </div>
@@ -716,10 +716,7 @@ function AttendanceTab({
                   </div>
                   <div className="text-center text-emerald-800">
                     {r.attendance.scannedAt
-                      ? new Date(r.attendance.scannedAt).toLocaleTimeString(
-                        undefined,
-                        { hour: '2-digit', minute: '2-digit' }
-                      )
+                      ? new Date(r.attendance.scannedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                       : '--'}
                   </div>
                   <div className="flex justify-center">

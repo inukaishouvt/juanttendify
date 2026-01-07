@@ -640,6 +640,7 @@ function AttendanceTab({
                 <th className="px-6 py-4 text-left text-sm font-extrabold uppercase tracking-[0.18em] text-emerald-800">Student</th>
                 <th className="px-6 py-4 text-left text-sm font-extrabold uppercase tracking-[0.18em] text-emerald-800">Period</th>
                 <th className="px-6 py-4 text-left text-sm font-extrabold uppercase tracking-[0.18em] text-emerald-800">Date</th>
+                <th className="px-6 py-4 text-left text-sm font-extrabold uppercase tracking-[0.18em] text-emerald-800">Time</th>
                 <th className="px-6 py-4 text-left text-sm font-extrabold uppercase tracking-[0.18em] text-emerald-800">Status</th>
                 <th className="px-6 py-4 text-left text-sm font-extrabold uppercase tracking-[0.18em] text-emerald-800">Location</th>
                 <th className="px-6 py-4 text-left text-sm font-extrabold uppercase tracking-[0.18em] text-emerald-800">Actions</th>
@@ -654,6 +655,11 @@ function AttendanceTab({
                     <td className="px-6 py-4 text-base text-emerald-900 font-medium">{record.student.name}</td>
                     <td className="px-6 py-4 text-base text-emerald-800">{record.period.name}</td>
                     <td className="px-6 py-4 text-base text-emerald-800">{record.date}</td>
+                    <td className="px-6 py-4 text-base text-emerald-800">
+                      {record.scannedAt
+                        ? new Date(record.scannedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                        : '--'}
+                    </td>
                     <td className="px-6 py-4">
                       <span
                         className={`px-4 py-2 rounded-full text-xs font-bold ${record.status === 'in'
