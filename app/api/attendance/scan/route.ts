@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { attendance, qrCodes, timePeriods, users } from '@/lib/db/schema';
-import { generateId, formatDate, formatTime, parseTime } from '@/lib/utils';
+import { generateId, getManilaToday, getManilaTimeParts, parseTime } from '@/lib/utils';
 import { verifyToken } from '@/lib/auth';
 import { eq, and } from 'drizzle-orm';
 import { isWithinGeofence, isGeofencingEnabled } from '@/lib/geofence';
@@ -77,8 +77,10 @@ export async function POST(request: NextRequest) {
 
     const periodRecord = period[0];
     const now = new Date();
-    const currentTime = formatTime(now);
-    const currentDate = formatDate(now);
+    const manilaTime = getManilaTimeParts(now);
+    const currentDate = getManilaToday();
+
+
 
     // Check if already scanned today for this period
     const existing = await db.select()
@@ -103,7 +105,7 @@ export async function POST(request: NextRequest) {
     if (locationStatus === 'verified') {
       const startTime = parseTime(periodRecord.startTime);
       const endTime = parseTime(periodRecord.endTime);
-      const nowMinutes = now.getHours() * 60 + now.getMinutes();
+      const nowMinutes = manilaTime.hours * 60 + manilaTime.minutes;
       const startMinutes = startTime.hours * 60 + startTime.minutes;
       const endMinutes = endTime.hours * 60 + endTime.minutes;
       const lateThreshold = startMinutes + periodRecord.lateThreshold;
@@ -163,7 +165,7 @@ export async function POST(request: NextRequest) {
       period: periodRecord,
       student: student[0],
       debug: {
-        currentTime: formatTime(now),
+        currentTime: `${manilaTime.hours}:${manilaTime.minutes.toString().padStart(2, '0')}`,
         periodTime: `${periodRecord.startTime} - ${periodRecord.endTime}`,
         locationStatus,
         locationProvided: latitude !== undefined && longitude !== undefined,

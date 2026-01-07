@@ -19,9 +19,15 @@ export function formatTime(date: Date): string {
 
 export function formatTime12h(timeString: string | number | Date): string {
   if (!timeString) return '--';
-  const date = typeof timeString === 'string' && timeString.includes(':')
-    ? new Date(`2000-01-01T${timeString}:00`)
-    : new Date(timeString);
+
+  let date: Date;
+  if (typeof timeString === 'string' && /^\d{1,2}:\d{2}$/.test(timeString)) {
+    // It's a simple HH:mm string (from a period)
+    date = new Date(`2000-01-01T${timeString}:00`);
+  } else {
+    // It's a timestamp (ISO string, number, or Date object)
+    date = new Date(timeString);
+  }
 
   if (isNaN(date.getTime())) return typeof timeString === 'string' ? timeString : '--';
 
@@ -71,6 +77,20 @@ export function getManilaToday(): string {
     month: '2-digit',
     day: '2-digit',
   }).format(new Date()).replace(/\//g, '-');
+}
+
+export function getManilaTimeParts(date: Date = new Date()): { hours: number; minutes: number } {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Manila',
+    hour: 'numeric',
+    minute: 'numeric',
+    hour12: false
+  }).formatToParts(date);
+
+  const hours = parseInt(parts.find(p => p.type === 'hour')?.value || '0', 10);
+  const minutes = parseInt(parts.find(p => p.type === 'minute')?.value || '0', 10);
+
+  return { hours, minutes };
 }
 
 export function parseTime(timeString: string): { hours: number; minutes: number } {
