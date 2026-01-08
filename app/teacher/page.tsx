@@ -625,7 +625,7 @@ function DashboardTab({
             onClick={onNavigateToAttendance}
             className="rounded-full bg-white px-6 py-3 text-sm font-extrabold tracking-wide text-emerald-800 shadow-sm hover:bg-emerald-100"
           >
-            VIEW ICT 201
+            VIEW ATTENDANCE
           </button>
         </div>
       </div>

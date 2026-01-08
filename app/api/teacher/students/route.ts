@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { users, attendance, timePeriods } from '@/lib/db/schema';
 import { verifyToken } from '@/lib/auth';
-import { eq, inArray } from 'drizzle-orm';
+import { eq, inArray, asc } from 'drizzle-orm';
 
 export async function GET(request: NextRequest) {
     try {
@@ -39,7 +39,8 @@ export async function GET(request: NextRequest) {
             })
             .from(attendance)
             .innerJoin(users, eq(attendance.studentId, users.id))
-            .where(inArray(attendance.periodId, periodIds));
+            .where(inArray(attendance.periodId, periodIds))
+            .orderBy(asc(users.name));
 
         return NextResponse.json({ students: studentAttendance });
     } catch (error) {

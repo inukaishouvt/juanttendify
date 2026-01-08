@@ -3,7 +3,7 @@ import { db } from '@/lib/db';
 import { timePeriods } from '@/lib/db/schema';
 import { verifyToken } from '@/lib/auth';
 import { generateId } from '@/lib/utils';
-import { eq } from 'drizzle-orm';
+import { eq, asc } from 'drizzle-orm';
 
 export async function GET(request: NextRequest) {
   try {
@@ -19,9 +19,11 @@ export async function GET(request: NextRequest) {
 
     let periods: any[];
     if (payload.role === 'teacher') {
-      periods = await db.select().from(timePeriods).where(eq(timePeriods.teacherId, payload.userId));
+      periods = await db.select().from(timePeriods)
+        .where(eq(timePeriods.teacherId, payload.userId))
+        .orderBy(asc(timePeriods.name));
     } else if (payload.role === 'secretary' || payload.role === 'sup_adm') {
-      periods = await db.select().from(timePeriods);
+      periods = await db.select().from(timePeriods).orderBy(asc(timePeriods.name));
     } else {
       periods = [];
     }
