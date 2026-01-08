@@ -42,7 +42,7 @@ type Period = {
   teacherId?: string;
 };
 
-type TabKey = 'dashboard' | 'attendance' | 'reports' | 'qr' | 'classes' | 'students';
+type TabKey = 'dashboard' | 'attendance' | 'reports' | 'qr' | 'classes' | 'students' | 'profile';
 
 export default function TeacherPage() {
   const [token, setToken] = useState<string | null>(null);
@@ -374,6 +374,12 @@ export default function TeacherPage() {
               active={tab === 'students'}
               onClick={() => setTab('students')}
             />
+            <SidebarLink
+              label="Profile Settings"
+              icon={<Users className="w-5 h-5" />}
+              active={tab === 'profile'}
+              onClick={() => setTab('profile')}
+            />
           </nav>
 
           <div className="mt-auto pt-8">
@@ -471,8 +477,14 @@ export default function TeacherPage() {
               <StudentsTab
                 students={students}
                 loading={loading}
+                search={search}
+                setSearch={setSearch}
                 onToggleRole={handleToggleRole}
               />
+            )}
+
+            {tab === 'profile' && user && (
+              <ProfileTab user={user} token={token || ''} />
             )}
           </main>
         </div>
@@ -1358,18 +1370,47 @@ function ClassesTab({ periods, onRefresh, token }: ClassesTabProps) {
 function StudentsTab({
   students,
   loading,
+  search,
+  setSearch,
   onToggleRole,
 }: {
   students: any[];
   loading: boolean;
+  search: string;
+  setSearch: (val: string) => void;
   onToggleRole: (id: string, currentRole: string) => void;
 }) {
+  const filteredStudents = useMemo(() => {
+    if (!search) return students;
+    const lower = search.toLowerCase();
+    return students.filter(s =>
+      s.name.toLowerCase().includes(lower) ||
+      s.email.toLowerCase().includes(lower) ||
+      (s.studentLrn && s.studentLrn.toLowerCase().includes(lower))
+    );
+  }, [students, search]);
+
   return (
     <div className="space-y-6">
       <h2 className="text-3xl font-extrabold text-emerald-900">Student Management</h2>
       <p className="text-base text-emerald-700">
         Manage students who have attended your classes. You can promote students to the <strong>Secretary</strong> role to help you with attendance.
       </p>
+
+      <div className="relative">
+        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+          <svg className="h-5 w-5 text-emerald-400" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+          </svg>
+        </div>
+        <input
+          type="text"
+          placeholder="Search students by name, email, or LRN..."
+          className="w-full rounded-full border border-emerald-100 bg-white py-4 pl-12 pr-6 text-sm text-emerald-900 shadow-sm transition-all focus:border-emerald-300 focus:ring-2 focus:ring-emerald-200 outline-none"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </div>
 
       <div className="overflow-hidden rounded-3xl bg-white shadow-lg">
         <div className="grid grid-cols-[2fr_1.5fr_1fr_1.2fr] border-b border-emerald-100 bg-emerald-50 px-8 py-4 text-sm font-extrabold uppercase tracking-[0.18em] text-emerald-800">
@@ -1389,7 +1430,7 @@ function StudentsTab({
           </div>
         ) : (
           <div className="max-h-[600px] overflow-y-auto">
-            {students.map((s) => (
+            {filteredStudents.map((s) => (
               <div
                 key={s.id}
                 className="grid grid-cols-[2fr_1.5fr_1fr_1.2fr] items-center border-b border-emerald-50 px-8 py-5 text-base last:border-b-0"
@@ -1425,6 +1466,133 @@ function StudentsTab({
             ))}
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+function ProfileTab({ user, token }: { user: any; token: string }) {
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setSuccess(null);
+
+    if (newPassword !== confirmPassword) {
+      setError('New passwords do not match');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch('/api/auth/change-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          currentPassword,
+          newPassword
+        })
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setSuccess('Password changed successfully');
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+      } else {
+        setError(data.error || 'Failed to change password');
+      }
+    } catch (err) {
+      setError('An error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <h2 className="text-3xl font-extrabold text-emerald-900">Profile Settings</h2>
+
+      <div className="grid gap-8 lg:grid-cols-2">
+        {/* Account Info */}
+        <div className="rounded-3xl bg-white p-8 shadow-lg">
+          <h3 className="mb-6 text-xl font-bold text-emerald-900 font-quicksand flex items-center gap-2">
+            <Users className="w-6 h-6 text-emerald-500" />
+            Account Information
+          </h3>
+          <div className="space-y-4">
+            <div>
+              <label className="text-xs font-bold uppercase tracking-wider text-emerald-500">Name</label>
+              <p className="text-lg font-semibold text-emerald-900">{user.name}</p>
+            </div>
+            <div>
+              <label className="text-xs font-bold uppercase tracking-wider text-emerald-500">Email Address</label>
+              <p className="text-lg font-semibold text-emerald-900">{user.email}</p>
+            </div>
+            <div>
+              <label className="text-xs font-bold uppercase tracking-wider text-emerald-500">Role</label>
+              <p className="text-lg font-semibold text-emerald-900 capitalize">{user.role}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Change Password */}
+        <div className="rounded-3xl bg-white p-8 shadow-lg">
+          <h3 className="mb-6 text-xl font-bold text-emerald-900 font-quicksand">Change Password</h3>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="mb-1 block text-sm font-semibold text-emerald-700">Current Password</label>
+              <input
+                type="password"
+                required
+                className="w-full rounded-full border border-emerald-100 bg-emerald-50 px-5 py-3 text-sm text-emerald-900 outline-none focus:ring-2 focus:ring-emerald-400"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-semibold text-emerald-700">New Password</label>
+              <input
+                type="password"
+                required
+                className="w-full rounded-full border border-emerald-100 bg-emerald-50 px-5 py-3 text-sm text-emerald-900 outline-none focus:ring-2 focus:ring-emerald-400"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-semibold text-emerald-700">Confirm New Password</label>
+              <input
+                type="password"
+                required
+                className="w-full rounded-full border border-emerald-100 bg-emerald-50 px-5 py-3 text-sm text-emerald-900 outline-none focus:ring-2 focus:ring-emerald-400"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+            </div>
+
+            {error && <p className="text-sm font-medium text-red-600">{error}</p>}
+            {success && <p className="text-sm font-medium text-emerald-600">{success}</p>}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full rounded-full bg-emerald-600 py-4 text-sm font-extrabold text-white transition-all hover:bg-emerald-700 disabled:opacity-50 shadow-md"
+            >
+              {loading ? 'Changing...' : 'Update Password'}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );
