@@ -196,73 +196,67 @@ export default function StudentPage() {
     const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     const isHTTPS = window.location.protocol === 'https:';
 
-    // iOS requires HTTPS (except for localhost in some cases, but Safari is strict)
+    // iOS requires HTTPS (except for localhost)
     if (isIOS && !isHTTPS && !isLocalhost) {
       setError('iOS Safari requires HTTPS for camera access. Please use https:// or deploy to a server with HTTPS.');
       return;
     }
 
-    // First, try to get camera permission explicitly
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-      // If we got the stream, stop it immediately - we just wanted to check permissions
-      stream.getTracks().forEach(track => track.stop());
-    } catch (permErr: any) {
-      console.error('Camera permission error:', permErr);
-      if (permErr.name === 'NotAllowedError' || permErr.name === 'PermissionDeniedError') {
-        setError('Camera permission denied. Please allow camera access in Safari settings: Settings > Safari > Camera > Allow');
-        return;
-      } else if (permErr.name === 'NotFoundError') {
-        setError('No camera found on this device.');
-        return;
-      } else if (permErr.name === 'NotReadableError' || permErr.name === 'TrackStartError') {
-        setError('Camera is already in use by another app. Please close other apps using the camera.');
-        return;
-      }
-    }
-
     const html5QrCode = new Html5Qrcode(scannerContainerRef.current.id);
     scannerRef.current = html5QrCode;
 
-    // Simplified camera configs - start with most common
-    const cameraConfigs = [
-      { facingMode: 'environment' }, // Back camera
-      { facingMode: 'user' }, // Front camera
-    ];
+    // Camera configuration
+    const config = {
+      fps: isIOS ? 5 : 10,
+      qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
+        const minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
+        const qrboxSize = Math.floor(minEdgeSize * 0.75);
+        return { width: qrboxSize, height: qrboxSize };
+      },
+      aspectRatio: 1.0,
+    };
 
-    let lastError: any = null;
+    const startWithConfig = async (cameraConfig: any) => {
+      await html5QrCode.start(
+        cameraConfig,
+        config,
+        (decodedText) => handleScan(decodedText),
+        () => { /* ignore scan errors */ }
+      );
+    };
 
-    for (const config of cameraConfigs) {
+    try {
+      await startWithConfig({ facingMode: 'environment' });
+      setScanning(true);
+      setError(null);
+    } catch (err: any) {
+      console.warn('Back camera failed, trying fallback...', err);
+
       try {
-        await html5QrCode.start(
-          config,
-          {
-            fps: isIOS ? 5 : 10,
-            qrbox: function (viewfinderWidth, viewfinderHeight) {
-              const minEdgePercentage = 0.75;
-              const minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
-              const qrboxSize = Math.floor(minEdgeSize * minEdgePercentage);
-              return {
-                width: qrboxSize,
-                height: qrboxSize
-              };
-            },
-            aspectRatio: 1.0,
-          },
-          (decodedText) => {
-            handleScan(decodedText);
-          },
-          (errorMessage) => {
-            // Ignore scan errors
-            console.debug('Scan error:', errorMessage);
-          }
-        );
+        // Try clearing before fallback or front camera
+        await html5QrCode.clear();
+      } catch (e) {
+        console.error('Clear failed before fallback:', e);
+      }
+
+      try {
+        // Try simple facingMode: 'user' as fallback
+        await startWithConfig({ facingMode: 'user' });
         setScanning(true);
         setError(null);
-        return; // Success!
-      } catch (err: any) {
-        lastError = err;
-        console.warn(`Camera config failed:`, err);
+      } catch (err2: any) {
+        console.error('Scanner start error:', err2);
+        const errorMessage = err2?.message || err2?.toString() || 'Unknown error';
+
+        if (errorMessage.includes('Permission') || errorMessage.includes('NotAllowed')) {
+          setError('Camera permission denied. Please allow camera access in your browser settings.');
+        } else if (errorMessage.includes('NotFound') || errorMessage.includes('no camera')) {
+          setError('No camera found on this device.');
+        } else {
+          setError(`Camera error: ${errorMessage}`);
+        }
+
+        // Final cleanup on failure
         try {
           await html5QrCode.clear();
           scannerRef.current = null;
@@ -270,27 +264,6 @@ export default function StudentPage() {
           // ignore
         }
       }
-    }
-
-    // If all configs failed, show helpful error
-    console.error('All camera configs failed:', lastError);
-    const errorMessage = lastError?.message || lastError?.toString() || 'Unknown error';
-
-    if (errorMessage.includes('Permission') || errorMessage.includes('NotAllowed')) {
-      setError('Camera permission denied. Go to Settings > Safari > Camera and allow access, then refresh the page.');
-    } else if (errorMessage.includes('NotFound') || errorMessage.includes('no camera')) {
-      setError('No camera found on this device.');
-    } else if (isIOS && !isHTTPS) {
-      setError('iOS Safari requires HTTPS. For localhost testing, you may need to set up HTTPS or use a different browser.');
-    } else {
-      setError(`Camera error: ${errorMessage}. Try refreshing the page or checking camera permissions.`);
-    }
-
-    try {
-      await html5QrCode.clear();
-      scannerRef.current = null;
-    } catch {
-      // ignore
     }
   };
 
