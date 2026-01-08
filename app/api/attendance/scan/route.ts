@@ -140,20 +140,43 @@ export async function POST(request: NextRequest) {
     const longitudeMicro = longitude !== undefined ? Math.round(longitude * 1e6) : null;
     const accuracyMeters = accuracy !== undefined ? Math.round(accuracy) : null;
 
-    const attendanceRecord = await db.insert(attendance).values({
-      id: generateId(),
-      studentId: payload.userId,
-      periodId: periodRecord.id,
-      qrCodeId: qrRecord.id,
-      status: finalStatus,
-      date: currentDate,
-      scannedAt: now,
-      createdAt: now,
-      latitude: latitudeMicro,
-      longitude: longitudeMicro,
-      accuracy: accuracyMeters,
-      locationStatus: locationStatus,
-    }).returning();
+    let attendanceRecord;
+    try {
+      attendanceRecord = await db.insert(attendance).values({
+        id: generateId(),
+        studentId: payload.userId,
+        periodId: periodRecord.id,
+        qrCodeId: qrRecord.id,
+        status: finalStatus,
+        date: currentDate,
+        scannedAt: now,
+        createdAt: now,
+        latitude: latitudeMicro,
+        longitude: longitudeMicro,
+        accuracy: accuracyMeters,
+        locationStatus: locationStatus,
+      }).returning();
+    } catch (dbErr: any) {
+      // Handle race condition where two requests might pass the 'existing' check
+      // but only one should succeed in the database
+      if (dbErr.message?.includes('UNIQUE') || dbErr.code === 'SQLITE_CONSTRAINT') {
+        const alreadyExists = await db.select().from(attendance).where(
+          and(
+            eq(attendance.studentId, payload.userId),
+            eq(attendance.periodId, periodRecord.id),
+            eq(attendance.date, currentDate)
+          )
+        ).limit(1);
+
+        if (alreadyExists.length > 0) {
+          return NextResponse.json({
+            error: 'Already scanned for this period today',
+            attendance: alreadyExists[0]
+          }, { status: 400 });
+        }
+      }
+      throw dbErr; // Re-throw other errors
+    }
 
     // Get student info
     const student = await db.select().from(users).where(eq(users.id, payload.userId)).limit(1);

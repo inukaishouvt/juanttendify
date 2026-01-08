@@ -17,14 +17,15 @@ export default function StudentPage() {
   const [attendance, setAttendance] = useState<any[]>([]);
   const [selectedPeriod, setSelectedPeriod] = useState<string>('');
   const [selectedDate, setSelectedDate] = useState<string>(getManilaToday());
-  const [scanner, setScanner] = useState<Html5Qrcode | null>(null);
+  const scannerRef = useRef<Html5Qrcode | null>(null);
+  const scannerContainerRef = useRef<HTMLDivElement>(null);
   const [scanning, setScanning] = useState(false);
+  const isProcessingScan = useRef(false);
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [apiResponses, setApiResponses] = useState<any[]>([]);
-  const scannerRef = useRef<HTMLDivElement>(null);
 
   const isSecretary = user?.role === 'secretary';
 
@@ -125,12 +126,19 @@ export default function StudentPage() {
   // Cleanup scanner on unmount
   useEffect(() => {
     return () => {
-      if (scanner) {
-        scanner.stop().catch(() => undefined);
-        scanner.clear();
+      if (scannerRef.current) {
+        if (scannerRef.current.isScanning) {
+          scannerRef.current.stop().catch(() => undefined).finally(() => {
+            scannerRef.current?.clear();
+            scannerRef.current = null;
+          });
+        } else {
+          scannerRef.current.clear();
+          scannerRef.current = null;
+        }
       }
     };
-  }, [scanner]);
+  }, []);
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -181,7 +189,7 @@ export default function StudentPage() {
   };
 
   const startScanner = async () => {
-    if (!scannerRef.current || scanner) return;
+    if (!scannerContainerRef.current || scannerRef.current) return;
 
     // Check if we're on iOS
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
@@ -213,7 +221,8 @@ export default function StudentPage() {
       }
     }
 
-    const html5QrCode = new Html5Qrcode(scannerRef.current.id);
+    const html5QrCode = new Html5Qrcode(scannerContainerRef.current.id);
+    scannerRef.current = html5QrCode;
 
     // Simplified camera configs - start with most common
     const cameraConfigs = [
@@ -248,7 +257,6 @@ export default function StudentPage() {
             console.debug('Scan error:', errorMessage);
           }
         );
-        setScanner(html5QrCode);
         setScanning(true);
         setError(null);
         return; // Success!
@@ -257,6 +265,7 @@ export default function StudentPage() {
         console.warn(`Camera config failed:`, err);
         try {
           await html5QrCode.clear();
+          scannerRef.current = null;
         } catch {
           // ignore
         }
@@ -279,20 +288,23 @@ export default function StudentPage() {
 
     try {
       await html5QrCode.clear();
+      scannerRef.current = null;
     } catch {
       // ignore
     }
   };
 
   const stopScanner = async () => {
-    if (!scanner) return;
+    if (!scannerRef.current) return;
     try {
-      await scanner.stop();
-      await scanner.clear();
-    } catch {
-      // ignore
+      if (scannerRef.current.isScanning) {
+        await scannerRef.current.stop();
+      }
+      await scannerRef.current.clear();
+    } catch (err) {
+      console.warn('Error stopping scanner:', err);
     } finally {
-      setScanner(null);
+      scannerRef.current = null;
       setScanning(false);
     }
   };
@@ -317,7 +329,8 @@ export default function StudentPage() {
   };
 
   const handleScan = async (qrCode: string) => {
-    if (!token) return;
+    if (!token || isProcessingScan.current) return;
+    isProcessingScan.current = true;
 
     let locationData: { latitude: number; longitude: number; accuracy: number } | null = null;
 
@@ -384,6 +397,8 @@ export default function StudentPage() {
         timestamp: new Date().toISOString(),
       }, ...prev]);
       stopScanner();
+    } finally {
+      isProcessingScan.current = false;
     }
   };
 
@@ -502,7 +517,7 @@ export default function StudentPage() {
                       <div className="relative w-full max-w-[280px] aspect-square rounded-[25px] border-4 border-emerald-700 bg-black/10 overflow-hidden">
                         <div
                           id="qr-reader"
-                          ref={scannerRef}
+                          ref={scannerContainerRef}
                           className="absolute inset-0 rounded-xl"
                         />
                         <div className="pointer-events-none absolute inset-4 border-2 border-dashed border-yellow-400 rounded-lg" />
@@ -545,8 +560,8 @@ export default function StudentPage() {
 
                         <div className="mt-4 flex flex-col items-center gap-1">
                           <span className={`px-4 py-1 rounded-full text-[10px] font-black tracking-wider uppercase ${result.status === 'in' ? 'bg-emerald-100 text-emerald-700' :
-                              result.status === 'late' ? 'bg-orange-100 text-orange-700' :
-                                'bg-yellow-100 text-yellow-700'
+                            result.status === 'late' ? 'bg-orange-100 text-orange-700' :
+                              'bg-yellow-100 text-yellow-700'
                             }`}>
                             {result.status === 'in_review' ? 'IN REVIEW' : (result.status === 'in' ? 'PRESENT' : result.status)}
                           </span>
@@ -610,8 +625,8 @@ export default function StudentPage() {
                           <p className="text-[9px] text-emerald-600">{formatTime12h(r.attendance.scannedAt)}</p>
                         </div>
                         <span className={`flex-shrink-0 ml-2 px-3 py-1 rounded-full text-[9px] font-black uppercase ${r.attendance.status === 'in' ? 'bg-emerald-100 text-emerald-700' :
-                            r.attendance.status === 'late' ? 'bg-orange-100 text-orange-700' :
-                              'bg-yellow-100 text-yellow-700'
+                          r.attendance.status === 'late' ? 'bg-orange-100 text-orange-700' :
+                            'bg-yellow-100 text-yellow-700'
                           }`}>
                           {r.attendance.status === 'in' ? 'PRS' : r.attendance.status.slice(0, 3)}
                         </span>
