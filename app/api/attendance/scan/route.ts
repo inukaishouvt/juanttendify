@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     }
 
     const payload = verifyToken(token);
-    if (!payload || payload.role !== 'student') {
+    if (!payload || (payload.role !== 'student' && payload.role !== 'secretary')) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 

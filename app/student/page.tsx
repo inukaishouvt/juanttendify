@@ -26,6 +26,7 @@ export default function StudentPage() {
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [apiResponses, setApiResponses] = useState<any[]>([]);
+  const [qrCodeData, setQrCodeData] = useState<any>(null);
 
   const isSecretary = user?.role === 'secretary';
 
@@ -77,10 +78,45 @@ export default function StudentPage() {
   };
 
   useEffect(() => {
+    if (token && isSecretary && (activeTab === 'attendance' || activeTab === 'qr') && periods.length === 0) {
+      fetchPeriods(token);
+    }
+
     if (token && isSecretary && activeTab === 'attendance' && selectedPeriod && selectedDate) {
       fetchAttendance(token, selectedPeriod, selectedDate);
     }
-  }, [activeTab, selectedPeriod, selectedDate, token, isSecretary]);
+  }, [activeTab, selectedPeriod, selectedDate, token, isSecretary, periods.length]);
+
+  const handleGenerateQR = async (periodId: string) => {
+    if (!token || !periodId) return;
+    setLoading(true);
+    setQrCodeData(null);
+    setError(null);
+    try {
+      const res = await fetch('/api/qr/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          periodId,
+          date: getManilaToday(),
+          expiresInMinutes: 60
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setQrCodeData(data);
+      } else {
+        setError(data.error || 'Failed to generate QR code');
+      }
+    } catch (err) {
+      setError('Network error. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handlePasswordChange = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -619,23 +655,59 @@ export default function StudentPage() {
               <div className="flex-1 flex flex-col p-4 overflow-hidden space-y-4">
                 <header className="flex-shrink-0">
                   <h2 className="text-sm font-extrabold text-emerald-800 tracking-wider">ASSISTANT QR</h2>
-                  <p className="text-[10px] text-emerald-600 font-medium">Secretary Generator</p>
+                  <p className="text-[10px] text-emerald-600 font-medium">Generate Period QR</p>
                 </header>
 
-                <div className="flex-1 flex flex-col items-center justify-center text-center space-y-4">
-                  {/* Simplified QR Generator Component - Since the logic needs to stay safe, 
-                       we recommend the secretary uses the teacher's main QR or 
-                       we implement a basic version if you really need it.
-                       For now, let's keep it simple as requested. */}
-                  <div className="p-8 rounded-3xl bg-emerald-50 border-2 border-dashed border-emerald-200 text-emerald-700">
-                    <QrCode size={48} className="mx-auto mb-4 opacity-40" />
-                    <p className="text-xs font-bold leading-relaxed px-4">
-                      Assistant QR features are currently being synchronized with your teacher&apos;s classes.
-                    </p>
+                <div className="flex-1 overflow-y-auto space-y-4 px-1 pb-4">
+                  <div className="rounded-2xl bg-white p-4 shadow-sm border border-emerald-50 space-y-3">
+                    <p className="text-[10px] font-bold text-emerald-800 uppercase px-1">Select Active Class</p>
+                    <select
+                      className="w-full rounded-xl border border-emerald-100 bg-emerald-50/30 px-3 py-2.5 text-[12px] font-semibold text-emerald-900 outline-none focus:ring-2 focus:ring-emerald-400"
+                      value={selectedPeriod}
+                      onChange={(e) => setSelectedPeriod(e.target.value)}
+                    >
+                      <option value="">Choose a class...</option>
+                      {periods.map(p => (
+                        <option key={p.id} value={p.id}>{p.name}</option>
+                      ))}
+                    </select>
+
+                    <button
+                      onClick={() => handleGenerateQR(selectedPeriod)}
+                      disabled={loading || !selectedPeriod}
+                      className="w-full rounded-full bg-emerald-600 px-4 py-2.5 text-xs font-black tracking-widest text-white uppercase shadow-md active:scale-95 transition-transform disabled:opacity-50"
+                    >
+                      {loading ? 'Generating...' : 'Generate Code'}
+                    </button>
                   </div>
-                  <p className="text-[10px] px-6 text-emerald-500 font-medium">
-                    Secretary access allows you to assist in class management and attendance monitoring.
-                  </p>
+
+                  {qrCodeData && (
+                    <div className="animate-in fade-in zoom-in duration-300 flex flex-col items-center">
+                      <div className="rounded-3xl bg-white p-6 shadow-xl border-4 border-emerald-100 relative group">
+                        <Image
+                          src={qrCodeData.qrCodeImage}
+                          alt="Generated QR"
+                          width={200}
+                          height={200}
+                          className="w-48 h-48 sm:w-56 sm:h-56 object-contain"
+                        />
+                        <div className="absolute top-2 right-2 bg-emerald-100 text-emerald-700 text-[8px] font-black px-2 py-0.5 rounded-full">
+                          ACTIVE
+                        </div>
+                      </div>
+                      <div className="mt-4 text-center">
+                        <p className="text-[10px] font-bold text-emerald-800 uppercase tracking-tighter">Current Code: <span className="text-emerald-600">{qrCodeData.qrCode}</span></p>
+                        <p className="text-[9px] text-emerald-500 font-medium mt-1">Valid for 60 minutes</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {!qrCodeData && (
+                    <div className="py-12 flex flex-col items-center justify-center text-center opacity-40">
+                      <QrCode size={64} className="text-emerald-200 mb-4" />
+                      <p className="text-[10px] font-bold text-emerald-800 px-6">Select a class above to generate a new QR code for today&apos;s attendance.</p>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
