@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Home, ClipboardList, BarChart3, QrCode, LogOut, Users } from 'lucide-react';
+import { Home, ClipboardList, BarChart3, QrCode, LogOut, Users, Eye, EyeOff } from 'lucide-react';
 import { formatTime12h, formatDateManila, getManilaToday } from '@/lib/utils';
 
 type AttendanceRecord = {
@@ -537,6 +537,31 @@ function DashboardTab({
         Your Dashboard
       </h2>
 
+      {/* Attendance calendar row */}
+      <div className="flex flex-col items-start justify-between gap-4 rounded-3xl bg-emerald-800/95 px-8 py-6 text-white shadow-lg sm:flex-row sm:items-center">
+        <div>
+          <p className="text-sm font-semibold tracking-[0.15em]">
+            ATTENDANCE CALENDAR
+          </p>
+          <p className="text-base">Select date to review attendance</p>
+        </div>
+        <div className="flex flex-wrap items-center gap-4">
+          <input
+            type="date"
+            value={selectedDate}
+            onChange={(e) => onDateChange(e.target.value)}
+            className="rounded-full border-none bg-white px-5 py-3 text-sm font-medium text-emerald-800 shadow-sm outline-none ring-0 focus:ring-2 focus:ring-emerald-400"
+          />
+          <button
+            type="button"
+            onClick={onNavigateToAttendance}
+            className="rounded-full bg-white px-6 py-3 text-sm font-extrabold tracking-wide text-emerald-800 shadow-sm hover:bg-emerald-100"
+          >
+            VIEW ATTENDANCE
+          </button>
+        </div>
+      </div>
+
       <div className="grid gap-4 md:grid-cols-[1.4fr_1fr] items-start">
         {/* Subject classes */}
         <div className="rounded-3xl bg-emerald-700/95 p-4 text-white shadow-lg">
@@ -614,31 +639,6 @@ function DashboardTab({
               Logs
             </button>
           </div>
-        </div>
-      </div>
-
-      {/* Attendance calendar row */}
-      <div className="flex flex-col items-start justify-between gap-4 rounded-3xl bg-emerald-800/95 px-8 py-6 text-white shadow-lg sm:flex-row sm:items-center">
-        <div>
-          <p className="text-sm font-semibold tracking-[0.15em]">
-            ATTENDANCE CALENDAR
-          </p>
-          <p className="text-base">Select date to review attendance</p>
-        </div>
-        <div className="flex flex-wrap items-center gap-4">
-          <input
-            type="date"
-            value={selectedDate}
-            onChange={(e) => onDateChange(e.target.value)}
-            className="rounded-full border-none bg-white px-5 py-3 text-sm font-medium text-emerald-800 shadow-sm outline-none ring-0 focus:ring-2 focus:ring-emerald-400"
-          />
-          <button
-            type="button"
-            onClick={onNavigateToAttendance}
-            className="rounded-full bg-white px-6 py-3 text-sm font-extrabold tracking-wide text-emerald-800 shadow-sm hover:bg-emerald-100"
-          >
-            VIEW ATTENDANCE
-          </button>
         </div>
       </div>
     </div>
@@ -1478,6 +1478,7 @@ function ProfileTab({ user, token }: { user: any; token: string }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1552,33 +1553,46 @@ function ProfileTab({ user, token }: { user: any; token: string }) {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="mb-1 block text-sm font-semibold text-emerald-700">Current Password</label>
-              <input
-                type="password"
-                required
-                className="w-full rounded-full border border-emerald-100 bg-emerald-50 px-5 py-3 text-sm text-emerald-900 outline-none focus:ring-2 focus:ring-emerald-400"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  className="w-full rounded-full border border-emerald-100 bg-emerald-50 px-5 py-3 pr-12 text-sm text-emerald-900 outline-none focus:ring-2 focus:ring-emerald-400"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-600 hover:text-emerald-800"
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
             </div>
             <div>
               <label className="mb-1 block text-sm font-semibold text-emerald-700">New Password</label>
-              <input
-                type="password"
-                required
-                className="w-full rounded-full border border-emerald-100 bg-emerald-50 px-5 py-3 text-sm text-emerald-900 outline-none focus:ring-2 focus:ring-emerald-400"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  className="w-full rounded-full border border-emerald-100 bg-emerald-50 px-5 py-3 pr-12 text-sm text-emerald-900 outline-none focus:ring-2 focus:ring-emerald-400"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                />
+              </div>
             </div>
             <div>
               <label className="mb-1 block text-sm font-semibold text-emerald-700">Confirm New Password</label>
-              <input
-                type="password"
-                required
-                className="w-full rounded-full border border-emerald-100 bg-emerald-50 px-5 py-3 text-sm text-emerald-900 outline-none focus:ring-2 focus:ring-emerald-400"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  className="w-full rounded-full border border-emerald-100 bg-emerald-50 px-5 py-3 pr-12 text-sm text-emerald-900 outline-none focus:ring-2 focus:ring-emerald-400"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                />
+              </div>
             </div>
 
             {error && <p className="text-sm font-medium text-red-600">{error}</p>}

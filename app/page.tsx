@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 
 export default function Home() {
   const [activeModal, setActiveModal] = useState<'login' | 'register' | null>(
@@ -186,6 +187,7 @@ type AuthLoginFormProps = {
 function AuthLoginForm({ onSuccess }: AuthLoginFormProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -250,20 +252,29 @@ function AuthLoginForm({ onSuccess }: AuthLoginFormProps) {
         />
       </div>
 
-      <div>
+      <div className="relative">
         <label
           htmlFor="login-password"
           className="mb-1 block text-sm font-semibold text-emerald-50"
         >
           Password
         </label>
-        <input
-          id="login-password"
-          name="password"
-          type="password"
-          required
-          className="w-full rounded-full border-none bg-white px-5 py-3 text-sm font-medium text-emerald-900 shadow-sm outline-none ring-0 focus:ring-2 focus:ring-emerald-400"
-        />
+        <div className="relative">
+          <input
+            id="login-password"
+            name="password"
+            type={showPassword ? 'text' : 'password'}
+            required
+            className="w-full rounded-full border-none bg-white px-5 py-3 pr-12 text-sm font-medium text-emerald-900 shadow-sm outline-none ring-0 focus:ring-2 focus:ring-emerald-400"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-600 hover:text-emerald-800"
+          >
+            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+          </button>
+        </div>
       </div>
 
       {error && (
@@ -291,6 +302,7 @@ function AuthRegisterForm({ onSuccess }: AuthRegisterFormProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [role, setRole] = useState<'student' | 'teacher'>('student');
+  const [showPassword, setShowPassword] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -422,36 +434,47 @@ function AuthRegisterForm({ onSuccess }: AuthRegisterFormProps) {
         </div>
       )}
 
-      <div>
+      <div className="relative">
         <label
           htmlFor="reg-password"
           className="mb-1 block text-sm font-semibold text-emerald-50"
         >
           Password
         </label>
-        <input
-          id="reg-password"
-          name="password"
-          type="password"
-          required
-          className="w-full rounded-full border-none bg-white px-5 py-3 text-sm font-medium text-emerald-900 shadow-sm outline-none ring-0 focus:ring-2 focus:ring-emerald-400"
-        />
+        <div className="relative">
+          <input
+            id="reg-password"
+            name="password"
+            type={showPassword ? 'text' : 'password'}
+            required
+            className="w-full rounded-full border-none bg-white px-5 py-3 pr-12 text-sm font-medium text-emerald-900 shadow-sm outline-none ring-0 focus:ring-2 focus:ring-emerald-400"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-600 hover:text-emerald-800"
+          >
+            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+          </button>
+        </div>
       </div>
 
-      <div>
+      <div className="relative">
         <label
           htmlFor="reg-confirm"
           className="mb-1 block text-sm font-semibold text-emerald-50"
         >
           Confirm Password
         </label>
-        <input
-          id="reg-confirm"
-          name="confirm"
-          type="password"
-          required
-          className="w-full rounded-full border-none bg-white px-5 py-3 text-sm font-medium text-emerald-900 shadow-sm outline-none ring-0 focus:ring-2 focus:ring-emerald-400"
-        />
+        <div className="relative">
+          <input
+            id="reg-confirm"
+            name="confirm"
+            type={showPassword ? 'text' : 'password'}
+            required
+            className="w-full rounded-full border-none bg-white px-5 py-3 pr-12 text-sm font-medium text-emerald-900 shadow-sm outline-none ring-0 focus:ring-2 focus:ring-emerald-400"
+          />
+        </div>
       </div>
 
       {error && (

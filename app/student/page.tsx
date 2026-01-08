@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 import Link from 'next/link';
 import Image from 'next/image';
-import { QrCode, ClipboardList, LogOut, User, Key, CheckCircle2, ChevronRight, LayoutDashboard } from 'lucide-react';
+import { QrCode, ClipboardList, LogOut, User, Key, CheckCircle2, ChevronRight, LayoutDashboard, Eye, EyeOff } from 'lucide-react';
 import { formatTime12h, formatDateManila, getManilaToday } from '@/lib/utils';
 
 type TabKey = 'scanner' | 'attendance' | 'qr' | 'profile';
@@ -27,6 +27,7 @@ export default function StudentPage() {
   const [loading, setLoading] = useState(false);
   const [apiResponses, setApiResponses] = useState<any[]>([]);
   const [qrCodeData, setQrCodeData] = useState<any>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const isSecretary = user?.role === 'secretary';
 
@@ -760,27 +761,40 @@ export default function StudentPage() {
                     )}
 
                     <div className="space-y-3">
-                      <input
-                        type="password"
-                        name="currentPassword"
-                        placeholder="Current Password"
-                        required
-                        className="w-full rounded-xl bg-white/10 px-4 py-2.5 text-xs text-white placeholder-emerald-400 outline-none focus:ring-1 focus:ring-emerald-400 border border-white/5"
-                      />
-                      <input
-                        type="password"
-                        name="newPassword"
-                        placeholder="New Password"
-                        required
-                        className="w-full rounded-xl bg-white/10 px-4 py-2.5 text-xs text-white placeholder-emerald-400 outline-none focus:ring-1 focus:ring-emerald-400 border border-white/5"
-                      />
-                      <input
-                        type="password"
-                        name="confirmPassword"
-                        placeholder="Confirm New Password"
-                        required
-                        className="w-full rounded-xl bg-white/10 px-4 py-2.5 text-xs text-white placeholder-emerald-400 outline-none focus:ring-1 focus:ring-emerald-400 border border-white/5"
-                      />
+                      <div className="relative">
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          name="currentPassword"
+                          placeholder="Current Password"
+                          required
+                          className="w-full rounded-xl bg-white/10 px-4 py-2.5 pr-12 text-xs text-white placeholder-emerald-400 outline-none focus:ring-1 focus:ring-emerald-400 border border-white/5"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-400 hover:text-emerald-200"
+                        >
+                          {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                        </button>
+                      </div>
+                      <div className="relative">
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          name="newPassword"
+                          placeholder="New Password"
+                          required
+                          className="w-full rounded-xl bg-white/10 px-4 py-2.5 pr-12 text-xs text-white placeholder-emerald-400 outline-none focus:ring-1 focus:ring-emerald-400 border border-white/5"
+                        />
+                      </div>
+                      <div className="relative">
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          name="confirmPassword"
+                          placeholder="Confirm New Password"
+                          required
+                          className="w-full rounded-xl bg-white/10 px-4 py-2.5 pr-12 text-xs text-white placeholder-emerald-400 outline-none focus:ring-1 focus:ring-emerald-400 border border-white/5"
+                        />
+                      </div>
                     </div>
 
                     <button

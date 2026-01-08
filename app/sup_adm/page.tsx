@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { LayoutDashboard, Users, ClipboardList, Clock, Smartphone, LogOut } from 'lucide-react';
+import { LayoutDashboard, Users, ClipboardList, Clock, Smartphone, LogOut, Eye, EyeOff } from 'lucide-react';
 import { formatTime12h, formatDateManila, formatDateTimeManila, getManilaToday } from '@/lib/utils';
 
 type User = {
@@ -911,6 +911,7 @@ function UserFormModal({
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   user: User | null;
 }) {
+  const [showPassword, setShowPassword] = useState(false);
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
       <div className="bg-emerald-700/95 rounded-[32px] p-8 max-w-md w-full mx-4 text-white shadow-2xl">
@@ -949,12 +950,21 @@ function UserFormModal({
           </div>
           <div>
             <label className="block text-base font-semibold text-emerald-50 mb-2">Password</label>
-            <input
-              type="password"
-              name="password"
-              required={!user}
-              className="w-full rounded-full border-none bg-white px-6 py-4 text-base font-medium text-emerald-900 shadow-sm outline-none ring-0 focus:ring-2 focus:ring-emerald-400"
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                name="password"
+                required={!user}
+                className="w-full rounded-full border-none bg-white px-6 py-4 pr-16 text-base font-medium text-emerald-900 shadow-sm outline-none ring-0 focus:ring-2 focus:ring-emerald-400"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-600 hover:text-emerald-800"
+              >
+                {showPassword ? <EyeOff size={24} /> : <Eye size={24} />}
+              </button>
+            </div>
           </div>
           <div>
             <label className="block text-base font-semibold text-emerald-50 mb-2">Role</label>
