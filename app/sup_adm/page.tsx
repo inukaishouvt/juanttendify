@@ -51,6 +51,8 @@ type QRCode = {
 type TabKey = 'dashboard' | 'users' | 'attendance' | 'periods' | 'qrcodes';
 
 export default function SuperAdminPage() {
+  const [token, setToken] = useState<string | null>(null);
+  const [user, setUser] = useState<any>(null);
   const [tab, setTab] = useState<TabKey>('dashboard');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -69,12 +71,32 @@ export default function SuperAdminPage() {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [editingPeriod, setEditingPeriod] = useState<Period | null>(null);
 
+  // Load session
   useEffect(() => {
-    fetchAllData();
+    const storedToken = localStorage.getItem('token');
+    const storedUser = localStorage.getItem('user');
+    if (!storedToken || !storedUser) {
+      window.location.href = '/';
+      return;
+    }
+    const parsedUser = JSON.parse(storedUser);
+    if (parsedUser.role !== 'sup_adm') {
+      window.location.href = '/';
+      return;
+    }
+    setToken(storedToken);
+    setUser(parsedUser);
   }, []);
+
+  useEffect(() => {
+    if (token) {
+      fetchAllData();
+    }
+  }, [token]);
 
   // Auto-refresh every 10 seconds
   useEffect(() => {
+    if (!token) return;
     const interval = setInterval(() => {
       // Refresh statistics and attendance silently
       void fetchAttendance();
@@ -82,7 +104,7 @@ export default function SuperAdminPage() {
       void fetchQRCodes();
     }, 10000);
     return () => clearInterval(interval);
-  }, []);
+  }, [token]);
 
   const fetchAllData = async () => {
     setLoading(true);
@@ -102,8 +124,11 @@ export default function SuperAdminPage() {
   };
 
   const fetchUsers = async () => {
+    if (!token) return;
     try {
-      const res = await fetch('/api/sup_adm/users');
+      const res = await fetch('/api/sup_adm/users', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       const data = await res.json();
       if (res.ok) {
         setUsers(data.users || []);
@@ -114,8 +139,11 @@ export default function SuperAdminPage() {
   };
 
   const fetchPeriods = async () => {
+    if (!token) return;
     try {
-      const res = await fetch('/api/sup_adm/periods');
+      const res = await fetch('/api/sup_adm/periods', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       const data = await res.json();
       if (res.ok) {
         setPeriods(data.periods || []);
@@ -126,8 +154,11 @@ export default function SuperAdminPage() {
   };
 
   const fetchAttendance = async () => {
+    if (!token) return;
     try {
-      const res = await fetch('/api/sup_adm/attendance');
+      const res = await fetch('/api/sup_adm/attendance', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       const data = await res.json();
       if (res.ok) {
         setAttendance(data.attendance || []);
@@ -138,8 +169,11 @@ export default function SuperAdminPage() {
   };
 
   const fetchQRCodes = async () => {
+    if (!token) return;
     try {
-      const res = await fetch('/api/sup_adm/qrcodes');
+      const res = await fetch('/api/sup_adm/qrcodes', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       const data = await res.json();
       if (res.ok) {
         setQrCodes(data.qrCodes || []);
@@ -150,8 +184,11 @@ export default function SuperAdminPage() {
   };
 
   const fetchStats = async () => {
+    if (!token) return;
     try {
-      const res = await fetch('/api/sup_adm/stats');
+      const res = await fetch('/api/sup_adm/stats', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       const data = await res.json();
       if (res.ok) {
         setStats(data);
@@ -184,7 +221,10 @@ export default function SuperAdminPage() {
 
       const res = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
         body: JSON.stringify(data),
       });
       const result = await res.json();
@@ -211,6 +251,7 @@ export default function SuperAdminPage() {
     try {
       const res = await fetch(`/api/sup_adm/users/${userId}`, {
         method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
         await fetchUsers();
@@ -241,7 +282,10 @@ export default function SuperAdminPage() {
 
       const res = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
         body: JSON.stringify(data),
       });
       const result = await res.json();
@@ -268,6 +312,7 @@ export default function SuperAdminPage() {
     try {
       const res = await fetch(`/api/sup_adm/periods/${periodId}`, {
         method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
         await fetchPeriods();
@@ -285,7 +330,10 @@ export default function SuperAdminPage() {
     try {
       const res = await fetch('/api/attendance/verify', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
         body: JSON.stringify({ attendanceId, status }),
       });
       if (res.ok) {
@@ -307,6 +355,8 @@ export default function SuperAdminPage() {
   );
 
   const logout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
     window.location.href = '/';
   };
 

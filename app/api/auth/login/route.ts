@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     // Generate token
     const token = generateToken({
       userId: user.id,
-      role: user.role as 'student' | 'teacher',
+      role: user.role as 'student' | 'teacher' | 'secretary' | 'sup_adm',
       email: user.email,
     });
 

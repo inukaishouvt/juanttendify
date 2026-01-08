@@ -2,22 +2,23 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { users, attendance } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
-import { hashPassword } from '@/lib/auth';
-
-function isSuperAdminRequest(request: NextRequest): boolean {
-  const referer = request.headers.get('referer');
-  return referer?.includes('/sup_adm') || true;
-}
+import { hashPassword, verifyToken } from '@/lib/auth';
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (!isSuperAdminRequest(request)) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
-
   try {
+    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const payload = verifyToken(token);
+    if (!payload || payload.role !== 'sup_adm') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const { id: userId } = await params;
     const body = await request.json();
     const { name, email, role, studentLrn, password } = body;
@@ -53,11 +54,17 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (!isSuperAdminRequest(request)) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
-
   try {
+    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const payload = verifyToken(token);
+    if (!payload || payload.role !== 'sup_adm') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const { id: userId } = await params;
 
     if (!userId) {
@@ -86,4 +93,3 @@ export async function DELETE(
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
-

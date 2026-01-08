@@ -2,18 +2,20 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { attendance, users, timePeriods } from '@/lib/db/schema';
 import { eq, desc } from 'drizzle-orm';
-
-function isSuperAdminRequest(request: NextRequest): boolean {
-  const referer = request.headers.get('referer');
-  return referer?.includes('/sup_adm') || true;
-}
+import { verifyToken } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
-  if (!isSuperAdminRequest(request)) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
-
   try {
+    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const payload = verifyToken(token);
+    if (!payload || payload.role !== 'sup_adm') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const records = await db
       .select({
         id: attendance.id,
@@ -40,4 +42,3 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
-

@@ -1,22 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { users, timePeriods, attendance, qrCodes } from '@/lib/db/schema';
-import { hashPassword } from '@/lib/auth';
+import { users } from '@/lib/db/schema';
+import { hashPassword, verifyToken } from '@/lib/auth';
 import { generateId } from '@/lib/utils';
 import { eq, asc } from 'drizzle-orm';
 
-// Helper to check if request is from superadmin route
-function isSuperAdminRequest(request: NextRequest): boolean {
-  const referer = request.headers.get('referer');
-  return referer?.includes('/sup_adm') || true; // Allow for now, can add proper auth later
-}
-
 export async function GET(request: NextRequest) {
-  if (!isSuperAdminRequest(request)) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
-
   try {
+    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const payload = verifyToken(token);
+    if (!payload || payload.role !== 'sup_adm') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const allUsers = await db.select().from(users).orderBy(asc(users.name));
     return NextResponse.json({ users: allUsers });
   } catch (error) {
@@ -26,11 +26,17 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  if (!isSuperAdminRequest(request)) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
-
   try {
+    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const payload = verifyToken(token);
+    if (!payload || payload.role !== 'sup_adm') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const body = await request.json();
     const { email, password, name, role, studentLrn } = body;
 
@@ -68,4 +74,3 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
-

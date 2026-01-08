@@ -216,6 +216,8 @@ function AuthLoginForm({ onSuccess }: AuthLoginFormProps) {
       onSuccess();
       if (data.user.role === 'teacher') {
         window.location.href = '/teacher';
+      } else if (data.user.role === 'sup_adm') {
+        window.location.href = '/sup_adm';
       } else {
         window.location.href = '/student';
       }
