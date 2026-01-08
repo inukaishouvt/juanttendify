@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
-    let periods;
+    let periods: any[];
     if (payload.role === 'teacher') {
       periods = await db.select().from(timePeriods).where(eq(timePeriods.teacherId, payload.userId));
     } else if (payload.role === 'secretary' || payload.role === 'sup_adm') {

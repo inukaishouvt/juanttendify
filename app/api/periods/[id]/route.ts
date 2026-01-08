@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { timePeriods } from '@/lib/db/schema';
+import { timePeriods, attendance, qrCodes } from '@/lib/db/schema';
 import { verifyToken } from '@/lib/auth';
 import { eq, and } from 'drizzle-orm';
 
@@ -82,6 +82,10 @@ export async function DELETE(
         if (!existing) {
             return NextResponse.json({ error: 'Period not found or unauthorized' }, { status: 404 });
         }
+
+        // Delete related records first to avoid foreign key constraints
+        await db.delete(attendance).where(eq(attendance.periodId, periodId));
+        await db.delete(qrCodes).where(eq(qrCodes.periodId, periodId));
 
         await db.delete(timePeriods).where(eq(timePeriods.id, periodId));
 

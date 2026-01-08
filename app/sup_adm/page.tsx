@@ -61,6 +61,7 @@ export default function SuperAdminPage() {
   const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
   const [qrCodes, setQrCodes] = useState<QRCode[]>([]);
   const [stats, setStats] = useState<any>(null);
+  const [usersSearch, setUsersSearch] = useState('');
 
   // Form states
   const [showUserForm, setShowUserForm] = useState(false);
@@ -299,6 +300,12 @@ export default function SuperAdminPage() {
     }
   };
 
+  const filteredUsers = users.filter(user =>
+    user.name.toLowerCase().includes(usersSearch.toLowerCase()) ||
+    user.email.toLowerCase().includes(usersSearch.toLowerCase()) ||
+    (user.studentLrn && user.studentLrn.includes(usersSearch))
+  );
+
   const logout = () => {
     window.location.href = '/';
   };
@@ -327,7 +334,7 @@ export default function SuperAdminPage() {
 
       <div className="mx-auto flex min-h-screen w-full">
         {/* Sidebar */}
-        <aside className="flex w-72 flex-col bg-emerald-800/95 px-6 py-8 text-emerald-50">
+        <aside className="fixed inset-y-0 left-0 flex w-72 flex-col bg-emerald-800/95 px-6 py-8 text-emerald-50 z-20">
           <div className="mb-10 flex items-center gap-4">
             <Image
               src="/Logo.png"
@@ -388,7 +395,7 @@ export default function SuperAdminPage() {
         </aside>
 
         {/* Main content */}
-        <div className="flex flex-1 flex-col bg-white/80">
+        <div className="flex flex-1 flex-col bg-white/80 ml-72 min-h-screen">
           {/* Top bar */}
           <header className="flex items-center justify-between border-b border-emerald-100 bg-white/80 px-10 py-6">
             <div>
@@ -405,7 +412,7 @@ export default function SuperAdminPage() {
           </header>
 
           {/* Content */}
-          <main className="flex-1 overflow-y-auto px-10 py-8">
+          <main className="flex-1 px-10 py-8">
             {error && (
               <div className="mb-4 rounded-xl bg-red-100 px-4 py-3 text-sm font-medium text-red-700">
                 {error}
@@ -415,11 +422,13 @@ export default function SuperAdminPage() {
             {tab === 'dashboard' && <DashboardTab stats={stats} />}
             {tab === 'users' && (
               <UsersTab
-                users={users}
+                users={filteredUsers}
                 onRefresh={fetchUsers}
                 onCreate={() => setShowUserForm(true)}
                 onEdit={handleEditUser}
                 onDelete={handleDeleteUser}
+                search={usersSearch}
+                onSearchChange={setUsersSearch}
               />
             )}
             {tab === 'attendance' && (
@@ -532,28 +541,44 @@ function StatCard({ label, value, color }: { label: string; value: number; color
 }
 
 function UsersTab({
-  users,
-  onRefresh,
-  onCreate,
   onEdit,
   onDelete,
+  search,
+  onSearchChange,
 }: {
   users: User[];
   onRefresh: () => void;
   onCreate: () => void;
   onEdit: (user: User) => void;
   onDelete: (id: string) => void;
+  search: string;
+  onSearchChange: (val: string) => void;
 }) {
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-3xl font-extrabold text-emerald-900">Users Management</h2>
-        <button
-          onClick={onCreate}
-          className="px-6 py-3 bg-emerald-600 text-white rounded-full font-semibold hover:bg-emerald-700 shadow-sm"
-        >
-          + Create User
-        </button>
+      <div className="flex justify-between items-center bg-white p-6 rounded-3xl shadow-sm border border-emerald-50">
+        <div>
+          <h2 className="text-3xl font-extrabold text-emerald-900">Users Management</h2>
+          <p className="text-sm text-emerald-600 mt-1">Manage all accounts in the system</p>
+        </div>
+        <div className="flex items-center gap-4">
+          <div className="relative">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-400">🔍</span>
+            <input
+              type="text"
+              placeholder="Search by name, email, or LRN..."
+              value={search}
+              onChange={(e) => onSearchChange(e.target.value)}
+              className="pl-10 pr-4 py-2.5 w-72 rounded-full border border-emerald-100 bg-emerald-50/50 text-sm text-emerald-900 outline-none focus:ring-2 focus:ring-emerald-400 focus:bg-white transition-all"
+            />
+          </div>
+          <button
+            onClick={onCreate}
+            className="px-6 py-2.5 bg-emerald-600 text-white rounded-full font-bold text-sm hover:bg-emerald-700 shadow-lg active:scale-95 transition-all"
+          >
+            + Create User
+          </button>
+        </div>
       </div>
       <div className="overflow-hidden rounded-3xl bg-white shadow-lg">
         <div className="overflow-x-auto">

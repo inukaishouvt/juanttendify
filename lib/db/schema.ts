@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
 // Users table (students and teachers)
 export const users = sqliteTable('users', {
@@ -50,5 +50,7 @@ export const attendance = sqliteTable('attendance', {
   longitude: integer('longitude'), // Location longitude in microdegrees (multiply by 1e-6 to get degrees)
   accuracy: integer('accuracy'), // Location accuracy in meters
   locationStatus: text('location_status'), // 'verified', 'in_review', or null
-});
+}, (table) => ({
+  attendanceUniqueIdx: uniqueIndex('attendance_unique_idx').on(table.studentId, table.periodId, table.date),
+}));
 

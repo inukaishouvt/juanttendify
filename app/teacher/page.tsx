@@ -330,7 +330,7 @@ export default function TeacherPage() {
     <div className="min-h-screen bg-gradient-to-t from-emerald-700/80 via-emerald-500/40 to-white/85">
       <div className="mx-auto flex min-h-screen w-full">
         {/* Sidebar */}
-        <aside className="flex w-72 flex-col bg-emerald-800/95 px-6 py-8 text-emerald-50">
+        <aside className="fixed inset-y-0 left-0 flex w-72 flex-col bg-emerald-800/95 px-6 py-8 text-emerald-50 z-20">
           <div className="mb-10 flex items-center gap-4">
             <Image
               src="/green Logo.png"
@@ -388,7 +388,7 @@ export default function TeacherPage() {
         </aside>
 
         {/* Main content */}
-        <div className="flex flex-1 flex-col bg-white/80">
+        <div className="flex flex-1 flex-col bg-white/80 ml-72 min-h-screen">
           {/* Top bar */}
           <header className="flex items-center justify-between border-b border-emerald-100 bg-white/80 px-10 py-6">
             <div>
@@ -414,7 +414,7 @@ export default function TeacherPage() {
           </header>
 
           {/* Tabs */}
-          <main className="flex-1 overflow-y-auto px-10 py-8">
+          <main className="flex-1 px-10 py-6">
             {tab === 'dashboard' && (
               <DashboardTab
                 periods={periods}
@@ -527,23 +527,23 @@ function DashboardTab({
 
       <div className="grid gap-4 md:grid-cols-[1.4fr_1fr]">
         {/* Subject classes */}
-        <div className="rounded-3xl bg-emerald-700/95 p-5 text-white shadow-lg">
-          <h3 className="mb-4 text-base font-semibold tracking-[0.15em]">
-            CLASS SCHEDULE
+        <div className="rounded-3xl bg-emerald-700/95 p-4 text-white shadow-lg">
+          <h3 className="mb-3 text-[10px] font-black tracking-[0.2em] opacity-80 uppercase">
+            Class Schedule
           </h3>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-2">
             {periods.length === 0 ? (
-              <p className="text-base text-emerald-100">
+              <p className="text-sm text-emerald-100 italic">
                 No periods found yet. Create some in the QR Code Generator tab.
               </p>
             ) : (
               periods.map((p) => (
                 <div
                   key={p.id}
-                  className="rounded-2xl bg-white text-emerald-800 px-6 py-4 text-sm font-semibold shadow-sm"
+                  className="rounded-xl bg-white/10 backdrop-blur-sm border border-white/10 px-4 py-3 text-sm font-semibold shadow-sm"
                 >
-                  <p>{p.name}</p>
-                  <p className="mt-2 text-xs text-emerald-600">
+                  <p className="text-white font-bold">{p.name}</p>
+                  <p className="mt-1 text-[11px] text-emerald-200">
                     {formatTime12h(p.startTime)} – {formatTime12h(p.endTime)}
                   </p>
                 </div>
@@ -553,11 +553,11 @@ function DashboardTab({
         </div>
 
         {/* Attendance summary */}
-        <div className="flex flex-col rounded-3xl bg-emerald-700/95 p-5 text-white shadow-lg">
-          <h3 className="mb-1 text-base font-semibold tracking-[0.15em]">
-            ATTENDANCE SUMMARY
+        <div className="flex flex-col rounded-3xl bg-emerald-700/95 p-4 text-white shadow-lg">
+          <h3 className="mb-2 text-[10px] font-black tracking-[0.2em] opacity-80 uppercase">
+            Attendance Summary
           </h3>
-          <div className="flex flex-1 items-end gap-2">
+          <div className="flex flex-1 items-end gap-1.5 pb-2">
             {(['present', 'late', 'absent', 'in_review'] as const).map((key) => {
               if (key === 'in_review' && summary.inReview === 0) return null;
               // Map the key to the correct property name in summary
@@ -589,17 +589,17 @@ function DashboardTab({
             })}
           </div>
 
-          <div className="mt-4 flex items-center justify-between text-sm text-emerald-100">
+          <div className="mt-3 flex items-center justify-between text-xs text-emerald-100 pt-2 border-t border-white/10">
             <div>
-              <p>Total students scanned</p>
-              <p className="text-2xl font-bold">{summary.total}</p>
+              <p className="opacity-70">Total Scanning</p>
+              <p className="text-xl font-black">{summary.total}</p>
             </div>
             <button
               type="button"
               onClick={onNavigateToAttendance}
-              className="rounded-full bg-white px-5 py-3 text-sm font-semibold text-emerald-800 hover:bg-emerald-100"
+              className="rounded-full bg-white px-4 py-2 text-[11px] font-black tracking-widest uppercase text-emerald-800 hover:bg-emerald-100 active:scale-95 transition-all"
             >
-              View records
+              Logs
             </button>
           </div>
         </div>
@@ -1403,8 +1403,8 @@ function StudentsTab({
                 </div>
                 <div className="flex justify-center">
                   <span className={`rounded-full px-4 py-1 text-xs font-bold uppercase ${s.role === 'secretary'
-                      ? 'bg-purple-100 text-purple-700 border border-purple-200'
-                      : 'bg-blue-100 text-blue-700 border border-blue-200'
+                    ? 'bg-purple-100 text-purple-700 border border-purple-200'
+                    : 'bg-blue-100 text-blue-700 border border-blue-200'
                     }`}>
                     {s.role}
                   </span>
@@ -1414,8 +1414,8 @@ function StudentsTab({
                     onClick={() => onToggleRole(s.id, s.role)}
                     disabled={loading}
                     className={`rounded-full px-4 py-2 text-xs font-bold transition-all active:scale-95 ${s.role === 'secretary'
-                        ? 'bg-red-50 text-red-600 hover:bg-red-100'
-                        : 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-md'
+                      ? 'bg-red-50 text-red-600 hover:bg-red-100'
+                      : 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-md'
                       } disabled:opacity-50`}
                   >
                     {s.role === 'secretary' ? 'Remove Secretary' : 'Promote to Secretary'}
