@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Home, ClipboardList, BarChart3, QrCode, LogOut } from 'lucide-react';
+import { Home, ClipboardList, BarChart3, QrCode, LogOut, Users } from 'lucide-react';
 import { formatTime12h, formatDateManila, getManilaToday } from '@/lib/utils';
 
 type AttendanceRecord = {
@@ -42,7 +42,7 @@ type Period = {
   teacherId?: string;
 };
 
-type TabKey = 'dashboard' | 'attendance' | 'reports' | 'qr' | 'classes';
+type TabKey = 'dashboard' | 'attendance' | 'reports' | 'qr' | 'classes' | 'students';
 
 export default function TeacherPage() {
   const [token, setToken] = useState<string | null>(null);
@@ -61,6 +61,7 @@ export default function TeacherPage() {
     'all' | 'present' | 'absent' | 'late' | 'in_review'
   >('all');
   const [search, setSearch] = useState('');
+  const [students, setStudents] = useState<any[]>([]);
 
   // Load session
   useEffect(() => {
@@ -84,6 +85,13 @@ export default function TeacherPage() {
     if (!token) return;
     void fetchPeriods();
   }, [token]);
+
+  useEffect(() => {
+    if (!token) return;
+    if (tab === 'students') {
+      void fetchStudents();
+    }
+  }, [token, tab]);
 
   useEffect(() => {
     if (!token) return;
@@ -181,6 +189,59 @@ export default function TeacherPage() {
       setError('Failed to generate QR code');
     } finally {
       setQrLoading(false);
+    }
+  }
+
+  async function fetchStudents() {
+    if (!token) return;
+    setLoading(true);
+    try {
+      const res = await fetch('/api/teacher/students', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setStudents(data.students);
+      } else {
+        setError(data.error ?? 'Failed to load students');
+      }
+    } catch (err) {
+      console.error('Error fetching students:', err);
+      setError('Failed to load students');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleToggleRole(studentId: string, currentRole: string) {
+    if (!token) return;
+    const newRole = currentRole === 'secretary' ? 'student' : 'secretary';
+
+    setLoading(true);
+    try {
+      const res = await fetch('/api/teacher/students/role', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ studentId, role: newRole }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        // Refresh local student list
+        setStudents(prev => prev.map(s =>
+          s.id === studentId ? { ...s, role: newRole } : s
+        ));
+        setError(null);
+      } else {
+        setError(data.error ?? 'Failed to update student role');
+      }
+    } catch (err) {
+      console.error('Error updating role:', err);
+      setError('Failed to update student role');
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -307,6 +368,12 @@ export default function TeacherPage() {
               active={tab === 'classes'}
               onClick={() => setTab('classes')}
             />
+            <SidebarLink
+              label="Student Management"
+              icon={<Users className="w-5 h-5" />}
+              active={tab === 'students'}
+              onClick={() => setTab('students')}
+            />
           </nav>
 
           <div className="mt-auto pt-8">
@@ -397,6 +464,14 @@ export default function TeacherPage() {
                 periods={periods}
                 onRefresh={fetchPeriods}
                 token={token!}
+              />
+            )}
+
+            {tab === 'students' && (
+              <StudentsTab
+                students={students}
+                loading={loading}
+                onToggleRole={handleToggleRole}
               />
             )}
           </main>
@@ -1275,6 +1350,81 @@ function ClassesTab({ periods, onRefresh, token }: ClassesTabProps) {
             </div>
           )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+function StudentsTab({
+  students,
+  loading,
+  onToggleRole,
+}: {
+  students: any[];
+  loading: boolean;
+  onToggleRole: (id: string, currentRole: string) => void;
+}) {
+  return (
+    <div className="space-y-6">
+      <h2 className="text-3xl font-extrabold text-emerald-900">Student Management</h2>
+      <p className="text-base text-emerald-700">
+        Manage students who have attended your classes. You can promote students to the <strong>Secretary</strong> role to help you with attendance.
+      </p>
+
+      <div className="overflow-hidden rounded-3xl bg-white shadow-lg">
+        <div className="grid grid-cols-[2fr_1.5fr_1fr_1.2fr] border-b border-emerald-100 bg-emerald-50 px-8 py-4 text-sm font-extrabold uppercase tracking-[0.18em] text-emerald-800">
+          <div>Name / Email</div>
+          <div className="text-center">LRN</div>
+          <div className="text-center">Current Role</div>
+          <div className="text-center">Action</div>
+        </div>
+
+        {loading && students.length === 0 ? (
+          <div className="py-12 text-center text-base text-emerald-700">
+            Loading students...
+          </div>
+        ) : students.length === 0 ? (
+          <div className="py-12 text-center text-base text-emerald-700">
+            No students found in your classes yet.
+          </div>
+        ) : (
+          <div className="max-h-[600px] overflow-y-auto">
+            {students.map((s) => (
+              <div
+                key={s.id}
+                className="grid grid-cols-[2fr_1.5fr_1fr_1.2fr] items-center border-b border-emerald-50 px-8 py-5 text-base last:border-b-0"
+              >
+                <div className="min-w-0">
+                  <p className="font-bold text-emerald-900 truncate">{s.name}</p>
+                  <p className="text-xs text-emerald-600 truncate">{s.email}</p>
+                </div>
+                <div className="text-center font-mono text-sm text-emerald-700">
+                  {s.studentLrn || 'N/A'}
+                </div>
+                <div className="flex justify-center">
+                  <span className={`rounded-full px-4 py-1 text-xs font-bold uppercase ${s.role === 'secretary'
+                      ? 'bg-purple-100 text-purple-700 border border-purple-200'
+                      : 'bg-blue-100 text-blue-700 border border-blue-200'
+                    }`}>
+                    {s.role}
+                  </span>
+                </div>
+                <div className="flex justify-center">
+                  <button
+                    onClick={() => onToggleRole(s.id, s.role)}
+                    disabled={loading}
+                    className={`rounded-full px-4 py-2 text-xs font-bold transition-all active:scale-95 ${s.role === 'secretary'
+                        ? 'bg-red-50 text-red-600 hover:bg-red-100'
+                        : 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-md'
+                      } disabled:opacity-50`}
+                  >
+                    {s.role === 'secretary' ? 'Remove Secretary' : 'Promote to Secretary'}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

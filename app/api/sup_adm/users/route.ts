@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    if (role !== 'student' && role !== 'teacher') {
+    if (role !== 'student' && role !== 'teacher' && role !== 'secretary') {
       return NextResponse.json({ error: 'Invalid role' }, { status: 400 });
     }
 
