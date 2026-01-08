@@ -541,6 +541,9 @@ function StatCard({ label, value, color }: { label: string; value: number; color
 }
 
 function UsersTab({
+  users,
+  onRefresh,
+  onCreate,
   onEdit,
   onDelete,
   search,
