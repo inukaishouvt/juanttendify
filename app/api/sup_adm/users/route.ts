@@ -3,7 +3,7 @@ import { db } from '@/lib/db';
 import { users, timePeriods, attendance, qrCodes } from '@/lib/db/schema';
 import { hashPassword } from '@/lib/auth';
 import { generateId } from '@/lib/utils';
-import { eq } from 'drizzle-orm';
+import { eq, asc } from 'drizzle-orm';
 
 // Helper to check if request is from superadmin route
 function isSuperAdminRequest(request: NextRequest): boolean {
@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const allUsers = await db.select().from(users);
+    const allUsers = await db.select().from(users).orderBy(asc(users.name));
     return NextResponse.json({ users: allUsers });
   } catch (error) {
     console.error('Error fetching users:', error);

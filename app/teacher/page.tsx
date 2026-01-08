@@ -525,7 +525,7 @@ function DashboardTab({
         Your Dashboard
       </h2>
 
-      <div className="grid gap-4 md:grid-cols-[1.4fr_1fr]">
+      <div className="grid gap-4 md:grid-cols-[1.4fr_1fr] items-start">
         {/* Subject classes */}
         <div className="rounded-3xl bg-emerald-700/95 p-4 text-white shadow-lg">
           <h3 className="mb-3 text-[10px] font-black tracking-[0.2em] opacity-80 uppercase">

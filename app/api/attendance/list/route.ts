@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { attendance, users, timePeriods } from '@/lib/db/schema';
 import { verifyToken } from '@/lib/auth';
-import { eq, and, desc } from 'drizzle-orm';
+import { eq, and, desc, asc } from 'drizzle-orm';
 
 export async function GET(request: NextRequest) {
   try {
@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
       baseQuery = baseQuery.where(and(...conditions)) as any;
     }
 
-    const records = await baseQuery.orderBy(desc(attendance.scannedAt));
+    const records = await baseQuery.orderBy(asc(users.name), desc(attendance.scannedAt));
 
     return NextResponse.json({
       attendance: records,
