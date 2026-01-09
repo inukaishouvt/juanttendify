@@ -110,3 +110,16 @@ export function isTimeBetween(time: Date, startTime: string, endTime: string): b
   return nowMinutes >= startMinutes && nowMinutes <= endMinutes;
 }
 
+/**
+ * Converts a string to Title Case (proper capitalization for names)
+ * Example: "JOHN DOE" -> "John Doe", "jane doe" -> "Jane Doe"
+ */
+export function capitalizeName(name: string): string {
+  if (!name) return '';
+  return name
+    .toLowerCase()
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+

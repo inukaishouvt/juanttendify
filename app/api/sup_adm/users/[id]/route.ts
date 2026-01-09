@@ -3,6 +3,7 @@ import { db } from '@/lib/db';
 import { users, attendance } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { hashPassword, verifyToken } from '@/lib/auth';
+import { capitalizeName } from '@/lib/utils';
 
 export async function PATCH(
   request: NextRequest,
@@ -24,7 +25,7 @@ export async function PATCH(
     const { name, email, role, studentLrn, password } = body;
 
     const updateData: any = {};
-    if (name) updateData.name = name;
+    if (name) updateData.name = capitalizeName(name);
     if (email) updateData.email = email;
     if (role) updateData.role = role;
     if (studentLrn !== undefined) updateData.studentLrn = studentLrn;

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { users } from '@/lib/db/schema';
 import { hashPassword, generateToken } from '@/lib/auth';
-import { generateId } from '@/lib/utils';
+import { generateId, capitalizeName } from '@/lib/utils';
 import { eq } from 'drizzle-orm';
 
 export async function POST(request: NextRequest) {
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
       id: generateId(),
       email,
       password: hashedPassword,
-      name,
+      name: capitalizeName(name),
       role,
       studentLrn: role === 'student' ? studentLrn : null,
       createdAt: new Date(),
