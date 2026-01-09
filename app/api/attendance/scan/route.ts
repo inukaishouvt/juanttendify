@@ -111,15 +111,12 @@ export async function POST(request: NextRequest) {
       const lateThreshold = startMinutes + periodRecord.lateThreshold;
 
       // Relaxed status logic:
-      // 1. If scan is before lateThreshold -> 'in' (Present)
-      // 2. If scan is after lateThreshold but before end + grace -> 'late' 
-      // 3. If scan is after end + grace -> 'out' (Absent)
+      // 1. If scan is after end time -> 'out' (Absent)
+      // 2. If scan is after lateThreshold but before end -> 'late'
+      // 3. If scan is before lateThreshold -> 'in' (Present)
 
-      const GRACE_PERIOD_AFTER = 10; // minutes after period ends
-      const graceEnd = endMinutes + GRACE_PERIOD_AFTER;
-
-      if (nowMinutes > graceEnd) {
-        finalStatus = 'out'; // Too late (after grace period)
+      if (nowMinutes > endMinutes) {
+        finalStatus = 'out'; // Class is over
       } else if (nowMinutes > lateThreshold) {
         finalStatus = 'late'; // After late threshold
       } else {
