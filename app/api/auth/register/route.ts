@@ -52,6 +52,7 @@ export async function POST(request: NextRequest) {
         email: user[0].email,
         name: user[0].name,
         role: user[0].role,
+        studentLrn: user[0].studentLrn,
       },
     });
   } catch (error) {
