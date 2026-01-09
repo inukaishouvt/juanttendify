@@ -10,8 +10,6 @@
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "db:generate": "drizzle-kit generate",
-    "db:create-tables": "tsx scripts/create-tables.ts",
-    "db:migrate-attendance": "tsx scripts/migrate-attendance.ts",
     "seed": "tsx scripts/seed.ts"
   },
   "dependencies": {

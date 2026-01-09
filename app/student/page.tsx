@@ -32,7 +32,6 @@ export default function StudentPage() {
   const isSecretary = user?.role === 'secretary';
 
   useEffect(() => {
-    // Check for token in localStorage
     const storedToken = localStorage.getItem('token');
     const storedUser = localStorage.getItem('user');
     if (storedToken && storedUser) {

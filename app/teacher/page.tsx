@@ -63,7 +63,6 @@ export default function TeacherPage() {
   const [search, setSearch] = useState('');
   const [students, setStudents] = useState<any[]>([]);
 
-  // Load session
   useEffect(() => {
     const storedToken = localStorage.getItem('token');
     const storedUser = localStorage.getItem('user');
@@ -102,12 +101,11 @@ export default function TeacherPage() {
   useEffect(() => {
     if (!token) return;
 
-    // Only auto-refresh on dashboard, attendance, and QR tabs
     if (tab !== 'dashboard' && tab !== 'attendance' && tab !== 'qr') return;
 
     const intervalId = setInterval(() => {
       void fetchAttendance(true);
-    }, 5000); // Refresh every 5 seconds
+    }, 5000);
 
     return () => clearInterval(intervalId);
   }, [token, selectedPeriod, selectedDate, tab]);

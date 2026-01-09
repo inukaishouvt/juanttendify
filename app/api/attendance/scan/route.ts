@@ -178,13 +178,6 @@ export async function POST(request: NextRequest) {
       status: finalStatus,
       period: periodRecord,
       student: student[0],
-      debug: {
-        currentTime: `${manilaTime.hours}:${manilaTime.minutes.toString().padStart(2, '0')}`,
-        periodTime: `${periodRecord.startTime} - ${periodRecord.endTime}`,
-        locationStatus,
-        locationProvided: latitude !== undefined && longitude !== undefined,
-        accuracy: accuracy,
-      },
     });
   } catch (error) {
     console.error('Error scanning QR code:', error);

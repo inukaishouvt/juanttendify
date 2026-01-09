@@ -13,10 +13,8 @@ const GEOFENCE_POLYGON: [number, number][] = [
     [14.57310541395725, 121.1329594813601],
 ];
 
-// Temporary allowed coordinates (e.g. for events or testing)
-// [latitude, longitude, radiusInMeters]
 const SPECIAL_AREAS: [number, number, number][] = [
-    [14.621587, 121.088182, 100], // Temporary area requested by user
+    // [latitude, longitude, radiusInMeters]
 ];
 
 // Remove duplicate points
