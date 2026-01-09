@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
       baseQuery = baseQuery.where(and(...conditions)) as any;
     }
 
-    const records = await baseQuery.orderBy(asc(users.name), desc(attendance.scannedAt));
+    const records = await baseQuery.orderBy(desc(attendance.scannedAt));
 
     return NextResponse.json({
       attendance: records,

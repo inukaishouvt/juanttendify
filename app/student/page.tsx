@@ -571,9 +571,9 @@ export default function StudentPage() {
                         <div className="mt-4 flex flex-col items-center gap-1">
                           <span className={`px-4 py-1 rounded-full text-[10px] font-black tracking-wider uppercase ${result.status === 'in' ? 'bg-emerald-100 text-emerald-700' :
                             result.status === 'late' ? 'bg-orange-100 text-orange-700' :
-                              'bg-yellow-100 text-yellow-700'
+                              'bg-red-100 text-red-700'
                             }`}>
-                            {result.status === 'in_review' ? 'IN REVIEW' : (result.status === 'in' ? 'PRESENT' : result.status)}
+                            {result.status === 'in_review' ? 'IN REVIEW' : (result.status === 'in' ? 'PRESENT' : result.status === 'out' ? 'ABSENT' : result.status)}
                           </span>
                           {result.attendance?.locationStatus === 'in_review' && (
                             <p className="text-[9px] text-orange-600 font-bold italic">
@@ -636,9 +636,9 @@ export default function StudentPage() {
                         </div>
                         <span className={`flex-shrink-0 ml-2 px-3 py-1 rounded-full text-[9px] font-black uppercase ${r.attendance.status === 'in' ? 'bg-emerald-100 text-emerald-700' :
                           r.attendance.status === 'late' ? 'bg-orange-100 text-orange-700' :
-                            'bg-yellow-100 text-yellow-700'
+                            'bg-red-100 text-red-700'
                           }`}>
-                          {r.attendance.status === 'in' ? 'PRS' : r.attendance.status.slice(0, 3)}
+                          {r.attendance.status === 'in' ? 'PRS' : r.attendance.status === 'out' ? 'ABS' : r.attendance.status.slice(0, 3)}
                         </span>
                       </div>
                     ))
