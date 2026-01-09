@@ -110,26 +110,20 @@ export async function POST(request: NextRequest) {
       const endMinutes = endTime.hours * 60 + endTime.minutes;
       const lateThreshold = startMinutes + periodRecord.lateThreshold;
 
-      // Grace period: allow 5 minutes before start and 10 minutes after end
-      const GRACE_PERIOD_BEFORE = 5; // minutes before period starts
+      // Relaxed status logic:
+      // 1. If scan is before lateThreshold -> 'in' (Present)
+      // 2. If scan is after lateThreshold but before end + grace -> 'late' 
+      // 3. If scan is after end + grace -> 'out' (Absent)
+
       const GRACE_PERIOD_AFTER = 10; // minutes after period ends
-      const graceStart = startMinutes - GRACE_PERIOD_BEFORE;
       const graceEnd = endMinutes + GRACE_PERIOD_AFTER;
 
-      if (nowMinutes < graceStart) {
-        finalStatus = 'out'; // Too early (before grace period)
-      } else if (nowMinutes > graceEnd) {
+      if (nowMinutes > graceEnd) {
         finalStatus = 'out'; // Too late (after grace period)
-      } else if (nowMinutes < startMinutes) {
-        // Within grace period before start - mark as present
-        finalStatus = 'in';
-      } else if (nowMinutes > endMinutes) {
-        // Within grace period after end - mark as late
-        finalStatus = 'late';
       } else if (nowMinutes > lateThreshold) {
         finalStatus = 'late'; // After late threshold
       } else {
-        finalStatus = 'in'; // On time
+        finalStatus = 'in'; // All scans before late threshold (including early ones) are 'in'
       }
     }
     // If locationStatus is 'in_review', finalStatus is already set to 'in_review'
