@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { LayoutDashboard, Users, ClipboardList, Clock, Smartphone, LogOut, Eye, EyeOff } from 'lucide-react';
-import { formatTime12h, formatDateManila, formatDateTimeManila, getManilaToday } from '@/lib/utils';
+import { formatTime12h, formatDateManila, formatDateTimeManila, getManilaToday, capitalizeName } from '@/lib/utils';
 
 type User = {
   id: string;
@@ -649,7 +649,7 @@ function UsersTab({
             <tbody>
               {users.map((user) => (
                 <tr key={user.id} className="border-b border-emerald-50 last:border-b-0">
-                  <td className="px-6 py-4 text-base text-emerald-900 font-medium">{user.name}</td>
+                  <td className="px-6 py-4 text-base text-emerald-900 font-medium">{capitalizeName(user.name)}</td>
                   <td className="px-6 py-4 text-base text-emerald-800">{user.email}</td>
                   <td className="px-6 py-4">
                     <span
@@ -731,7 +731,7 @@ function AttendanceTab({
                 const lng = record.longitude ? (record.longitude / 1e6).toFixed(6) : null;
                 return (
                   <tr key={record.id} className="border-b border-emerald-50 last:border-b-0">
-                    <td className="px-6 py-4 text-base text-emerald-900 font-medium">{record.student.name}</td>
+                    <td className="px-6 py-4 text-base text-emerald-900 font-medium">{capitalizeName(record.student.name)}</td>
                     <td className="px-6 py-4 text-base text-emerald-800">{record.period.name}</td>
                     <td className="px-6 py-4 text-base text-emerald-800">{record.date}</td>
                     <td className="px-6 py-4 text-base text-emerald-800">

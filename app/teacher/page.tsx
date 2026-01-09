@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Home, ClipboardList, BarChart3, QrCode, LogOut, Users, Eye, EyeOff } from 'lucide-react';
-import { formatTime12h, formatDateManila, getManilaToday } from '@/lib/utils';
+import { formatTime12h, formatDateManila, getManilaToday, capitalizeName } from '@/lib/utils';
 
 type AttendanceRecord = {
   attendance: {
@@ -401,9 +401,7 @@ export default function TeacherPage() {
               <p className="text-sm font-semibold text-emerald-700">
                 Juan Sumulong Memorial Junior College
               </p>
-              <p className="text-2xl font-bold text-emerald-900">
-                {user.name}&apos;s Dashboard
-              </p>
+              {capitalizeName(user.name)}&apos;s Dashboard
             </div>
             <div className="flex items-center gap-5">
               <div className="rounded-xl bg-emerald-50 px-5 py-3 text-sm font-semibold text-emerald-700">
@@ -792,7 +790,7 @@ function AttendanceTab({
                   className="grid grid-cols-[2fr_1fr_1fr_1.5fr] items-center border-b border-emerald-50 px-8 py-4 text-base last:border-b-0"
                 >
                   <div className="truncate text-emerald-900">
-                    {r.student.name}
+                    {capitalizeName(r.student.name)}
                     {r.attendance.status === 'in_review' && (
                       <div className="mt-1 text-xs text-orange-600">
                         📍 {hasLocation ? `${lat}, ${lng}` : 'No location'}
@@ -1436,7 +1434,7 @@ function StudentsTab({
                 className="grid grid-cols-[2fr_1.5fr_1fr_1.2fr] items-center border-b border-emerald-50 px-8 py-5 text-base last:border-b-0"
               >
                 <div className="min-w-0">
-                  <p className="font-bold text-emerald-900 truncate">{s.name}</p>
+                  <p className="font-bold text-emerald-900 truncate">{capitalizeName(s.name)}</p>
                   <p className="text-xs text-emerald-600 truncate">{s.email}</p>
                 </div>
                 <div className="text-center font-mono text-sm text-emerald-700">
@@ -1534,7 +1532,7 @@ function ProfileTab({ user, token }: { user: any; token: string }) {
           <div className="space-y-4">
             <div>
               <label className="text-xs font-bold uppercase tracking-wider text-emerald-500">Name</label>
-              <p className="text-lg font-semibold text-emerald-900">{user.name}</p>
+              <p className="text-lg font-semibold text-emerald-900">{capitalizeName(user.name)}</p>
             </div>
             <div>
               <label className="text-xs font-bold uppercase tracking-wider text-emerald-500">Email Address</label>

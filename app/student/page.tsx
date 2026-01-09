@@ -5,7 +5,7 @@ import { Html5Qrcode } from 'html5-qrcode';
 import Link from 'next/link';
 import Image from 'next/image';
 import { QrCode, ClipboardList, LogOut, User, Key, CheckCircle2, ChevronRight, LayoutDashboard, Eye, EyeOff } from 'lucide-react';
-import { formatTime12h, formatDateManila, getManilaToday } from '@/lib/utils';
+import { formatTime12h, formatDateManila, getManilaToday, capitalizeName } from '@/lib/utils';
 
 type TabKey = 'scanner' | 'attendance' | 'qr' | 'profile';
 
@@ -496,7 +496,7 @@ export default function StudentPage() {
             </div>
             <div className="flex items-center gap-3 text-xs">
               <span className="text-[11px] font-medium">
-                {user?.name?.split(' ')[0] ?? 'Student'}
+                {user?.name ? capitalizeName(user.name.split(' ')[0]) : 'Student'}
               </span>
               <button
                 onClick={logout}
@@ -564,7 +564,7 @@ export default function StudentPage() {
                         Attendance Recorded!
                       </h2>
                       <div className="mt-4 rounded-xl bg-white/95 px-3 py-4 text-emerald-900 shadow-inner">
-                        <p className="text-xs font-extrabold truncate">{result.student?.name ?? user.name}</p>
+                        <p className="text-xs font-extrabold truncate">{capitalizeName(result.student?.name ?? user.name)}</p>
                         <p className="mt-1 text-[10px] text-emerald-600 font-medium">{result.period?.name}</p>
                         <p className="mt-2 text-[13px] font-bold text-emerald-800">{formatTime12h(result.attendance.scannedAt)}</p>
 
@@ -631,7 +631,7 @@ export default function StudentPage() {
                     attendance.map((r) => (
                       <div key={r.attendance.id} className="flex items-center justify-between rounded-xl bg-white p-3 shadow-sm border border-emerald-50">
                         <div className="min-w-0 flex-1">
-                          <p className="text-[11px] font-bold text-emerald-900 truncate">{r.student.name}</p>
+                          <p className="text-[11px] font-bold text-emerald-900 truncate">{capitalizeName(r.student.name)}</p>
                           <p className="text-[9px] text-emerald-600">{formatTime12h(r.attendance.scannedAt)}</p>
                         </div>
                         <span className={`flex-shrink-0 ml-2 px-3 py-1 rounded-full text-[9px] font-black uppercase ${r.attendance.status === 'in' ? 'bg-emerald-100 text-emerald-700' :
@@ -723,7 +723,7 @@ export default function StudentPage() {
                         <User size={24} />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-extrabold text-emerald-900 truncate">{user.name}</p>
+                        <p className="text-sm font-extrabold text-emerald-900 truncate">{capitalizeName(user.name)}</p>
                         <p className="text-xs text-emerald-600 truncate">{user.email}</p>
                       </div>
                     </div>
